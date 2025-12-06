@@ -1,0 +1,90 @@
+{
+  "project_info": {
+    "project_number": "717620846111",
+    "project_id": "trawallet-1",
+    "storage_bucket": "trawallet-1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:717620846111:android:bb88813eface594263bf2a",
+        "android_client_info": {
+          "package_name": "com.example.trawallet"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "717620846111-g45kjgab8u7b5kp0n2k6mpmr7cihu8mv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.trawallet",
+            "certificate_hash": "c80ade7690926a77fa9464351886ab60c147ab5f"
+          }
+        },
+        {
+          "client_id": "717620846111-5rbhomf2nfhhifk2m24fgm92oru1ktpe.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBUYrWpFBQVwLiATpJWXql4K2LQRRq6GeQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "717620846111-5rbhomf2nfhhifk2m24fgm92oru1ktpe.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "717620846111-p35d1vqphqmp6n4orpu0ljpkh0ibm15g.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.trawallet"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:717620846111:android:f065cb2ad8bcc84b63bf2a",
+        "android_client_info": {
+          "package_name": "com.example.trawallet_final_version"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "717620846111-5rbhomf2nfhhifk2m24fgm92oru1ktpe.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBUYrWpFBQVwLiATpJWXql4K2LQRRq6GeQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "717620846111-5rbhomf2nfhhifk2m24fgm92oru1ktpe.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "717620846111-p35d1vqphqmp6n4orpu0ljpkh0ibm15g.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.trawallet"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,36 @@
+lib/
+├── main.dart
+├── app.dart                   # Configuration initiale de l'app, routes
+├── models/                    # Tous les modèles
+│   ├── user_model.dart
+│   ├── digitalVault.dart
+│   ├── favorites.dart
+│   ├── social.dart
+│   ├── sos.dart
+│   ├── travelPreferences.dart
+│   ├── travelStats.dart
+│   └── userSettings.dart
+├── services/                  # Services pour API, Firestore, etc.
+│   └── user_service.dart
+├── controllers/               # Pour GetX ou autres state management
+│   └── user_controller.dart
+├── views/                     # Tous les écrans
+│   ├── auth/                  # Login / Signup
+│   │   ├── login_screen.dart
+│   │   └── signup_screen.dart
+│   ├── profile/
+│   │   ├── profile_screen.dart
+│   │   └── edit_profile_screen.dart
+│   ├── dashboard/
+│   │   └── dashboard_screen.dart
+│   └── travel/
+│       └── travel_stats_screen.dart
+├── widgets/                   # Widgets réutilisables
+│   ├── input.dart
+│   ├── custom_button.dart
+│   ├── profile_card.dart
+│   └── stat_card.dart
+└── utils/                     # Helpers, extensions, theme, etc.
+    ├── constants.dart
+    ├── theme.dart
+    └── helpers.dart
