@@ -233,7 +233,7 @@ class Post {
   // ========================================================================
   // READ - Get all posts (as stream for real-time updates)
   // ========================================================================
-  static Stream<List<Post>> getAllPosts() {
+  static Stream<List<Post>> getAllPostsWithUser(String currentUserId) {
     try {
       final firestore = FirebaseFirestore.instance;
       return firestore
@@ -241,8 +241,9 @@ class Post {
           .orderBy('createdAt', descending: true)
           .snapshots()
           .map(
-            (snapshot) =>
-                snapshot.docs.map((doc) => Post.fromFirestore(doc)).toList(),
+            (snapshot) => snapshot.docs
+                .map((doc) => Post.fromFirestoreWithUser(doc, currentUserId))
+                .toList(),
           );
     } catch (e) {
       throw Exception('Failed to get posts: $e');

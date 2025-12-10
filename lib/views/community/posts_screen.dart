@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:trawallet_final_version/models/post.dart';
 import 'package:trawallet_final_version/views/community/add_post_card.dart';
@@ -25,11 +26,13 @@ class _TravelFeedScreenState extends State<TravelFeedScreen> {
   final ScrollController _scrollController = ScrollController();
   List<Post> _posts = [];
   bool _isLoading = false;
+  String? _currentUserId;
 
   @override
   void initState() {
     super.initState();
     _loadPosts();
+    _currentUserId = FirebaseAuth.instance.currentUser?.uid; // Initialize
     _scrollController.addListener(_onScroll);
   }
 
@@ -51,6 +54,14 @@ class _TravelFeedScreenState extends State<TravelFeedScreen> {
   Future<void> _loadPosts() async {
     setState(() => _isLoading = true);
 
+    // Get current user ID
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+
+    if (currentUserId == null) {
+      setState(() => _isLoading = false);
+      return;
+    }
+
     final snapshot = await FirebaseFirestore.instance
         .collection('posts')
         .orderBy('createdAt', descending: true)
@@ -58,7 +69,10 @@ class _TravelFeedScreenState extends State<TravelFeedScreen> {
         .get();
 
     setState(() {
-      _posts = snapshot.docs.map((doc) => Post.fromFirestore(doc)).toList();
+      // Use fromFirestoreWithUser instead of fromFirestore
+      _posts = snapshot.docs
+          .map((doc) => Post.fromFirestoreWithUser(doc, currentUserId))
+          .toList();
       _isLoading = false;
     });
   }
@@ -78,20 +92,66 @@ class _TravelFeedScreenState extends State<TravelFeedScreen> {
     _loadPosts();
   }
 
-  void _onLikePressed(Post post) {
+  Future<void> _onLikePressed(Post post) async {
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+
+    if (currentUserId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('You must be logged in to like posts'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Create updated likedBy list
+    final updatedLikedBy = List<String>.from(post.likedBy);
+    final bool willBeLiked = !post.isLikedByCurrentUser;
+
+    if (willBeLiked) {
+      updatedLikedBy.add(currentUserId);
+    } else {
+      updatedLikedBy.remove(currentUserId);
+    }
+
+    // Optimistic UI update (update UI immediately for better UX)
     setState(() {
       final index = _posts.indexWhere((p) => p.postId == post.postId);
       if (index != -1) {
         _posts[index] = post.copyWith(
-          isLikedByCurrentUser: !post.isLikedByCurrentUser,
-          likesCount: post.isLikedByCurrentUser
-              ? post.likesCount - 1
-              : post.likesCount + 1,
+          isLikedByCurrentUser: willBeLiked,
+          likesCount: willBeLiked ? post.likesCount + 1 : post.likesCount - 1,
+          likedBy: updatedLikedBy, // Update the likedBy array
         );
       }
     });
 
-    // TODO: Update like in backend
+    // Update in Firestore backend
+    try {
+      await Post.toggleLike(post.postId, currentUserId);
+    } catch (e) {
+      print('Error toggling like: $e');
+
+      // Revert UI update on error
+      setState(() {
+        final index = _posts.indexWhere((p) => p.postId == post.postId);
+        if (index != -1) {
+          _posts[index] = post; // Revert to original post
+        }
+      });
+
+      // Show error to user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to update like'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    }
   }
 
   void _onCommentPressed(Post post) {
@@ -122,7 +182,7 @@ class _TravelFeedScreenState extends State<TravelFeedScreen> {
     return Navbar(
       activeScreenId: 2,
       child: Scaffold(
-        backgroundColor: const Color.fromARGB(255, 245, 245, 245),
+        backgroundColor: Colors.white,
         appBar: AppBar(
           title: const Text(
             'Travel Community',
@@ -130,8 +190,9 @@ class _TravelFeedScreenState extends State<TravelFeedScreen> {
           ),
           centerTitle: true,
           elevation: 0,
-          backgroundColor: Colors.teal.shade700,
-          foregroundColor: Colors.white,
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.teal,
+          scrolledUnderElevation: 0,
           actions: [
             IconButton(
               icon: const Icon(Icons.search),
@@ -189,7 +250,9 @@ class _TravelFeedScreenState extends State<TravelFeedScreen> {
             // Feed
             Expanded(
               child: _isLoading && _posts.isEmpty
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const Center(
+                      child: CircularProgressIndicator(color: Colors.teal),
+                    )
                   : RefreshIndicator(
                       onRefresh: _refreshFeed,
                       child: ListView.builder(

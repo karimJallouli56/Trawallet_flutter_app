@@ -252,13 +252,15 @@ class _VaultScreenState extends State<VaultScreen> with WidgetsBindingObserver {
 
     // Show vault content after successful authentication
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
           "Secure Digital Vault",
           style: TextStyle(fontWeight: FontWeight.w700),
         ),
-        backgroundColor: Colors.teal.shade700,
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.teal,
+        scrolledUnderElevation: 0,
         centerTitle: true,
         actions: [
           // Lock button to manually lock the vault

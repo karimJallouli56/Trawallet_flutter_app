@@ -15,6 +15,8 @@ import 'package:trawallet_final_version/views/profile/profile_details_screen.dar
 import 'package:trawallet_final_version/views/profile/profile_edit_screen.dart';
 import 'package:trawallet_final_version/views/profile/profile_screen.dart';
 import 'package:trawallet_final_version/views/transport/transport_screen.dart';
+import 'package:trawallet_final_version/views/trip%20planner/travel_career_screen.dart';
+import 'package:trawallet_final_version/views/trip%20planner/trip_screen.dart';
 import 'package:trawallet_final_version/views/vault/vault_screen.dart';
 import 'package:trawallet_final_version/views/weather/weather_screen.dart';
 
@@ -55,6 +57,8 @@ class MyApp extends StatelessWidget {
         '/weather': (context) => WeatherScreen(),
         '/transport': (context) => TransportScreen(),
         '/sos': (context) => EmergencyScreen(),
+        '/planner': (context) => TravelSchedulerScreen(),
+        '/travelCareer': (context) => TravelCareerScreen(),
       },
     );
   }

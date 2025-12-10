@@ -256,16 +256,24 @@ class _AddPostScreenState extends State<AddPostScreen> {
     });
 
     try {
-      print('Starting post creation...');
+      print('=== STARTING POST CREATION ===');
+      print('Content: ${_contentController.text}');
+      print('Images count: ${_selectedImages.length}');
+      print('Location: $_selectedLocation');
+      print('Category: $_selectedCategory');
 
       List<String> imageUrls = [];
       if (_selectedImages.isNotEmpty) {
-        print('Uploading ${_selectedImages.length} images...');
+        print('=== UPLOADING IMAGES ===');
         imageUrls = await _uploadImages();
-        print('All images uploaded successfully');
+        print('=== IMAGES UPLOADED: ${imageUrls.length} ===');
       }
 
-      print('Creating post in Firestore...');
+      print('=== CALLING Post.addPost ===');
+      print('UserId: ${widget.userId}');
+      print('Username: ${widget.username}');
+      print('UserAvatar: ${widget.userAvatar}');
+
       final postId = await Post.addPost(
         userId: widget.userId,
         username: widget.username,
@@ -276,9 +284,12 @@ class _AddPostScreenState extends State<AddPostScreen> {
         category: _selectedCategory,
       );
 
-      print('Post created successfully with ID: $postId');
+      print('=== POST CREATED: $postId ===');
 
-      if (!mounted) return;
+      if (!mounted) {
+        print('=== WIDGET NOT MOUNTED ===');
+        return;
+      }
 
       setState(() => _isUploading = false);
 
@@ -289,18 +300,19 @@ class _AddPostScreenState extends State<AddPostScreen> {
             backgroundColor: Colors.green,
           ),
         );
+        Navigator.of(context).pop(true);
       }
-
-      Navigator.of(context).pop(true);
     } catch (e, stack) {
-      print('Error creating post: $e');
-      print(stack);
+      print('=== ERROR OCCURRED ===');
+      print('Error: $e');
+      print('Stack trace: $stack');
+
       if (mounted) {
         setState(() => _isUploading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed: $e'), backgroundColor: Colors.red),
+        );
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed: $e'), backgroundColor: Colors.red),
-      );
     }
   }
 
@@ -326,9 +338,9 @@ class _AddPostScreenState extends State<AddPostScreen> {
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
-          backgroundColor: Colors.teal,
-          foregroundColor: Colors.white,
-          elevation: 1,
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.teal,
+          elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.close),
             onPressed: _isUploading ? null : () => Navigator.pop(context),
@@ -343,9 +355,9 @@ class _AddPostScreenState extends State<AddPostScreen> {
               child: ElevatedButton(
                 onPressed: (canPost && !_isUploading) ? _handlePost : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
+                  backgroundColor: Colors.teal,
                   foregroundColor: Colors.white,
-                  disabledBackgroundColor: Colors.teal[200],
+                  disabledBackgroundColor: Colors.grey[300],
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -364,7 +376,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
                     : const Text(
                         'Post',
                         style: TextStyle(
-                          color: Colors.teal,
+                          color: Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

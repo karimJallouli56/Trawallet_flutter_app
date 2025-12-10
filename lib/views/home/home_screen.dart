@@ -122,7 +122,7 @@ class HomeScreen extends StatelessWidget {
     return Navbar(
       activeScreenId: 0,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF7F9FC),
+        backgroundColor: Colors.white,
         body: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(20),

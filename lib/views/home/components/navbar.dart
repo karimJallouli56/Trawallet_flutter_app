@@ -18,16 +18,16 @@ class _NavbarState extends State<Navbar> {
 
     switch (index) {
       case 0:
-        Navigator.pushNamed(context, '/home');
+        Navigator.pushReplacementNamed(context, '/home');
         break;
       case 1:
-        Navigator.pushNamed(context, '/planner');
+        Navigator.pushReplacementNamed(context, '/planner');
         break;
       case 2:
-        Navigator.pushNamed(context, '/community');
+        Navigator.pushReplacementNamed(context, '/community');
         break;
       case 3:
-        Navigator.pushNamed(context, '/profile');
+        Navigator.pushReplacementNamed(context, '/profile');
         break;
     }
   }
@@ -38,25 +38,21 @@ class _NavbarState extends State<Navbar> {
       extendBody: true,
       body: widget.child,
 
-      bottomNavigationBar: SizedBox(
+      bottomNavigationBar: Container(
         height: 100,
-        child: ClipRect(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-            child: Container(
-              margin: const EdgeInsets.only(left: 20, right: 20, bottom: 25),
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 22),
+        color: Colors.white,
+        child: Container(
+          margin: const EdgeInsets.only(left: 20, right: 20, bottom: 25),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 22),
 
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _navItem(icon: Icons.home_filled, index: 0),
-                  _navItem(icon: Icons.calendar_month_outlined, index: 1),
-                  _navItem(icon: Icons.people_alt_outlined, index: 2),
-                  _navItem(icon: Icons.person_outline, index: 3),
-                ],
-              ),
-            ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _navItem(icon: Icons.home_filled, index: 0),
+              _navItem(icon: Icons.calendar_month_outlined, index: 1),
+              _navItem(icon: Icons.people_alt_outlined, index: 2),
+              _navItem(icon: Icons.person_outline, index: 3),
+            ],
           ),
         ),
       ),
@@ -76,7 +72,7 @@ class _NavbarState extends State<Navbar> {
           horizontal: isActive ? 16 : 0,
         ),
         decoration: BoxDecoration(
-          color: isActive ? Colors.teal.shade600 : Colors.transparent,
+          color: isActive ? Colors.teal : Colors.transparent,
           borderRadius: BorderRadius.circular(25),
         ),
         child: Row(
@@ -88,7 +84,7 @@ class _NavbarState extends State<Navbar> {
             ),
 
             if (isActive) ...[
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(
                 _getLabel(index),
                 style: const TextStyle(
@@ -109,7 +105,7 @@ class _NavbarState extends State<Navbar> {
       case 0:
         return 'Home';
       case 1:
-        return 'Planner';
+        return 'Travel Scheduler';
       case 2:
         return 'Community';
       case 3:

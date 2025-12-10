@@ -145,10 +145,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 '/profileDetails',
               ),
               _buildTile(
-                Icons.notifications_none,
-                "Notification",
+                Icons.card_travel,
+                "Travel Career",
                 context,
-                '/profileDetails',
+                '/travelCareer',
               ),
               _buildTileWithValue(Icons.language, "Language", "English (US)"),
               _buildToggleTile(Icons.dark_mode_outlined, "Dark Mode"),
