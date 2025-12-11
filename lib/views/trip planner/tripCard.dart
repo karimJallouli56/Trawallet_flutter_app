@@ -1,7 +1,9 @@
+// TripCard with integrated ConfirmationCard
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:trawallet_final_version/models/trip.dart';
 import 'package:trawallet_final_version/views/home/components/capitalizeWords.dart';
+import 'package:trawallet_final_version/widgets/confirmation_card.dart';
 
 class TripCard extends StatelessWidget {
   final Trip trip;
@@ -37,7 +39,7 @@ class TripCard extends StatelessWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.grey.shade400,
+                color: Colors.teal,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -74,6 +76,7 @@ class TripCard extends StatelessWidget {
                 ],
               ),
             ),
+
             SizedBox(height: 24),
             // Edit button
             if (onEdit != null)
@@ -81,10 +84,10 @@ class TripCard extends StatelessWidget {
                 leading: Container(
                   padding: EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.1),
+                    color: Colors.teal.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(Icons.edit, color: Colors.blue, size: 24),
+                  child: Icon(Icons.edit, color: Colors.teal, size: 24),
                 ),
                 title: Text(
                   'Edit Trip',
@@ -139,6 +142,7 @@ class TripCard extends StatelessWidget {
                 child: TextButton(
                   onPressed: () => Navigator.pop(context),
                   style: TextButton.styleFrom(
+                    backgroundColor: Colors.teal,
                     padding: EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -150,7 +154,7 @@ class TripCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade700,
+                      color: Colors.white,
                     ),
                   ),
                 ),
@@ -162,62 +166,15 @@ class TripCard extends StatelessWidget {
     );
   }
 
-  void _showDeleteConfirmation(BuildContext context) {
-    showDialog(
+  void _showDeleteConfirmation(BuildContext context) async {
+    await ConfirmationCard.show(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            Container(
-              padding: EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(Icons.warning_amber_rounded, color: Colors.red),
-            ),
-            SizedBox(width: 12),
-            Text('Delete Trip?'),
-          ],
-        ),
-        content: Text(
+      title: 'Delete Trip',
+      message:
           'Are you sure you want to delete "${capitalizeWords(trip.destination)}"? This action cannot be undone.',
-          style: TextStyle(fontSize: 15),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: TextStyle(
-                color: Colors.grey.shade700,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              onDelete();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            ),
-            child: Text(
-              'Delete',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      onConfirm: onDelete,
     );
   }
 

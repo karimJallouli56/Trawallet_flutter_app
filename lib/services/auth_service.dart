@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -11,17 +12,48 @@ class AuthService {
   // Auth state changes stream
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
-  // Sign up with email and password
   Future<UserCredential?> signUpWithEmail({
     required String email,
     required String password,
+    required String username,
+    required String name,
+    required String phone,
+    required String country,
   }) async {
     try {
+      // Create Firebase Auth user
       UserCredential userCredential = await _auth
           .createUserWithEmailAndPassword(email: email, password: password);
+
+      final uid = userCredential.user!.uid;
+
+      // Build AppUser data to save in Firestore
+      final userData = {
+        "id": uid,
+        "username": username,
+        "name": name,
+        "email": email,
+        "phone": phone,
+        "country": country,
+        "userAvatar": null,
+        "bio": "",
+        "interests": [],
+        "visitedCountries": 0,
+        "travelStory": "",
+        "points": 0,
+        "createdAt": FieldValue.serverTimestamp(),
+        "updatedAt": FieldValue.serverTimestamp(),
+      };
+
+      //Save to Firestore
+      await FirebaseFirestore.instance
+          .collection("users")
+          .doc(uid)
+          .set(userData);
+
       return userCredential;
-    } on FirebaseAuthException catch (e) {
-      throw _handleAuthException(e);
+    } catch (e) {
+      throw Exception("Signup failed: $e");
     }
   }
 
@@ -76,6 +108,75 @@ class AuthService {
     }
   }
 
+  // Delete account
+  Future<void> deleteAccount() async {
+    try {
+      User? user = _auth.currentUser;
+      if (user == null) {
+        throw 'No user is currently signed in';
+      }
+
+      // If user signed in with Google, sign out from Google as well
+      if (user.providerData.any((info) => info.providerId == 'google.com')) {
+        await _googleSignIn.signOut();
+      }
+
+      // Delete the user account
+      await user.delete();
+    } on FirebaseAuthException catch (e) {
+      // If the user needs to re-authenticate
+      if (e.code == 'requires-recent-login') {
+        throw 'Please sign in again before deleting your account';
+      }
+      throw _handleAuthException(e);
+    } catch (e) {
+      throw 'Failed to delete account: $e';
+    }
+  }
+
+  // Re-authenticate user (useful before sensitive operations like account deletion)
+  Future<void> reauthenticateWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      User? user = _auth.currentUser;
+      if (user == null) throw 'No user is currently signed in';
+
+      AuthCredential credential = EmailAuthProvider.credential(
+        email: email,
+        password: password,
+      );
+
+      await user.reauthenticateWithCredential(credential);
+    } on FirebaseAuthException catch (e) {
+      throw _handleAuthException(e);
+    }
+  }
+
+  // Re-authenticate with Google
+  Future<void> reauthenticateWithGoogle() async {
+    try {
+      User? user = _auth.currentUser;
+      if (user == null) throw 'No user is currently signed in';
+
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) throw 'Google sign-in cancelled';
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      await user.reauthenticateWithCredential(credential);
+    } catch (e) {
+      throw 'Re-authentication failed: $e';
+    }
+  }
+
   // Handle Firebase Auth exceptions
   String _handleAuthException(FirebaseAuthException e) {
     switch (e.code) {
@@ -89,6 +190,10 @@ class AuthService {
         return 'Wrong password provided.';
       case 'invalid-email':
         return 'The email address is invalid.';
+      case 'requires-recent-login':
+        return 'Please sign in again to complete this action.';
+      case 'user-disabled':
+        return 'This account has been disabled.';
       default:
         return 'An error occurred. Please try again.';
     }

@@ -15,6 +15,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _usernameController = TextEditingController();
+  final _nameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _countryController = TextEditingController();
+
   bool _isLoading = false;
 
   @override
@@ -22,6 +27,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _usernameController.dispose();
+    _nameController.dispose();
+    _phoneController.dispose();
+    _countryController.dispose();
+
     super.dispose();
   }
 
@@ -34,7 +44,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
       await _authService.signUpWithEmail(
         email: _emailController.text.trim(),
         password: _passwordController.text,
+        username: _usernameController.text.trim(),
+        name: _nameController.text.trim(),
+        phone: _phoneController.text.trim(),
+        country: _countryController.text.trim(),
       );
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Account created successfully!')),
@@ -90,7 +105,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 234, 248, 247),
+      backgroundColor: Colors.grey[50],
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -118,6 +133,55 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 32),
+
+                  InputField(
+                    label: 'Username',
+                    icon: Icons.person,
+                    controller: _usernameController,
+                    withBorder: true,
+                    isPassword: false,
+                    validator: (value) => value == null || value.isEmpty
+                        ? 'Please enter a username'
+                        : null,
+                  ),
+                  const SizedBox(height: 20),
+
+                  InputField(
+                    label: 'Full Name',
+                    icon: Icons.badge,
+                    controller: _nameController,
+                    withBorder: true,
+                    isPassword: false,
+                    validator: (value) => value == null || value.isEmpty
+                        ? 'Please enter your name'
+                        : null,
+                  ),
+                  const SizedBox(height: 20),
+
+                  InputField(
+                    label: 'Phone Number',
+                    icon: Icons.phone,
+                    controller: _phoneController,
+                    keyboardType: TextInputType.phone,
+                    withBorder: true,
+                    isPassword: false,
+                    validator: (value) => value == null || value.isEmpty
+                        ? 'Please enter your phone'
+                        : null,
+                  ),
+                  const SizedBox(height: 20),
+
+                  InputField(
+                    label: 'Country',
+                    icon: Icons.flag,
+                    controller: _countryController,
+                    withBorder: true,
+                    isPassword: false,
+                    validator: (value) => value == null || value.isEmpty
+                        ? 'Please enter your country'
+                        : null,
+                  ),
+                  const SizedBox(height: 20),
                   // Email Input Field
                   InputField(
                     label: 'Email Address',

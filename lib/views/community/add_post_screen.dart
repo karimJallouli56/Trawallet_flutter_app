@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:trawallet_final_version/widgets/alert_card.dart';
 import 'dart:io';
 import 'package:trawallet_final_version/widgets/input_field.dart';
 import 'package:trawallet_final_version/models/post.dart';
@@ -142,25 +141,94 @@ class _AddPostScreenState extends State<AddPostScreen> {
     showDialog(
       context: context,
       builder: (context) {
-        return AlertCard(
-          title: "Add Location",
-          input: InputField(
-            label: "Location",
-            icon: Icons.location_on,
-            controller: locationController,
-            withBorder: true,
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
           ),
-          icon: Icons.location_on,
-          confirmText: "Add",
-          onConfirm: () {
-            setState(() {
-              _selectedLocation = locationController.text;
-            });
-            Navigator.pop(context);
-          },
-          onCancel: () {
-            Navigator.pop(context);
-          },
+          contentPadding: EdgeInsets.fromLTRB(24, 0, 24, 24),
+          titlePadding: EdgeInsets.zero,
+          actionsPadding: const EdgeInsets.only(bottom: 12, right: 12),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 40,
+            vertical: 24,
+          ),
+          title: Container(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Add Location',
+                    style: const TextStyle(
+                      color: Colors.black87,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              InputField(
+                label: "Location",
+                icon: Icons.location_on,
+                controller: locationController,
+                withBorder: true,
+              ),
+            ],
+          ),
+          actions: [
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context, false),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  elevation: 0,
+                  padding: EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+                ),
+                child: Text(
+                  'Cancel',
+                  style: TextStyle(
+                    color: Colors.teal,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+            ),
+
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _selectedLocation = locationController.text;
+                  });
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.teal,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+                ),
+                child: Text(
+                  'Add',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+            ),
+          ],
         );
       },
     );

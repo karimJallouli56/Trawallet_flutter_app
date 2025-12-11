@@ -184,15 +184,26 @@ class _TravelCareerScreenState extends State<TravelCareerScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.teal, Colors.teal.shade400, Colors.teal.shade600],
-        ),
+        gradient: isExpanded
+            ? LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.teal,
+                  Colors.teal.shade400,
+                  Colors.teal.shade600,
+                ],
+              )
+            : null,
+        color: isExpanded ? null : Colors.grey.shade50,
+        border: isExpanded
+            ? null
+            : Border.all(color: Colors.teal.shade400, width: 1.5),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.teal.withOpacity(0.3),
+            color: Colors.teal.withOpacity(0.1),
+
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -203,22 +214,25 @@ class _TravelCareerScreenState extends State<TravelCareerScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.flight_takeoff, color: Colors.white, size: 28),
+              Icon(
+                Icons.flight_takeoff,
+                color: isExpanded ? Colors.white : Colors.teal,
+                size: 28,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   trip.destination,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: isExpanded ? Colors.white : Colors.teal,
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
-              // Expand/Collapse indicator
               Icon(
                 isExpanded ? Icons.expand_less : Icons.expand_more,
-                color: Colors.white,
+                color: isExpanded ? Colors.white : Colors.teal,
                 size: 28,
               ),
             ],
@@ -226,31 +240,46 @@ class _TravelCareerScreenState extends State<TravelCareerScreen> {
           const SizedBox(height: 12),
           Row(
             children: [
-              Icon(Icons.calendar_today, size: 16, color: Colors.white70),
+              Icon(
+                Icons.calendar_today,
+                size: 16,
+                color: isExpanded ? Colors.white70 : Colors.grey.shade600,
+              ),
               const SizedBox(width: 8),
               Text(
                 '${DateFormat('MMM d').format(trip.startDate)} - ${DateFormat('MMM d, yyyy').format(trip.endDate)}',
-                style: const TextStyle(color: Colors.white70, fontSize: 14),
+                style: TextStyle(
+                  color: isExpanded ? Colors.white70 : Colors.grey.shade600,
+                  fontSize: 14,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 8),
           Row(
             children: [
-              Icon(Icons.check_circle, size: 16, color: Colors.white70),
+              Icon(
+                Icons.check_circle,
+                size: 16,
+                color: isExpanded ? Colors.white70 : Colors.grey.shade600,
+              ),
               const SizedBox(width: 8),
               Text(
                 '$completedActivities/$totalActivities activities completed',
-                style: const TextStyle(color: Colors.white70, fontSize: 14),
+                style: TextStyle(
+                  color: isExpanded ? Colors.white70 : Colors.grey.shade600,
+                  fontSize: 14,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 8),
-          // Tap hint
           Text(
             isExpanded ? 'Tap to hide activities' : 'Tap to view activities',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.5),
+              color: isExpanded
+                  ? Colors.white.withOpacity(0.5)
+                  : Colors.grey.shade500,
               fontSize: 12,
               fontStyle: FontStyle.italic,
             ),
@@ -482,7 +511,7 @@ class _TravelCareerScreenState extends State<TravelCareerScreen> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.grey[400],
+              color: Colors.teal,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
