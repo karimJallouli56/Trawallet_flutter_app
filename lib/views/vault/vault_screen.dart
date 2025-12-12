@@ -150,7 +150,11 @@ class _VaultScreenState extends State<VaultScreen> with WidgetsBindingObserver {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('Authentication Failed'),
+        backgroundColor: Colors.white,
+        title: const Text(
+          'Authentication Failed',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         content: const Text(
           'You must authenticate to access the secure vault.',
         ),
@@ -160,14 +164,14 @@ class _VaultScreenState extends State<VaultScreen> with WidgetsBindingObserver {
               Navigator.of(context).pop();
               Navigator.of(context).pop(); // Exit vault screen
             },
-            child: const Text('Cancel'),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
           ),
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
               _authenticateUser();
             },
-            child: const Text('Retry'),
+            child: const Text('Retry', style: TextStyle(color: Colors.teal)),
           ),
         ],
       ),
@@ -180,6 +184,7 @@ class _VaultScreenState extends State<VaultScreen> with WidgetsBindingObserver {
     // Show loading screen during authentication
     if (_isLoading) {
       return Scaffold(
+        backgroundColor: Colors.grey[50],
         body: Padding(
           padding: EdgeInsets.symmetric(vertical: size.height * 0.3),
           child: Center(
@@ -202,11 +207,12 @@ class _VaultScreenState extends State<VaultScreen> with WidgetsBindingObserver {
     // Show locked screen if not authenticated
     if (!_isAuthenticated) {
       return Scaffold(
+        backgroundColor: Colors.grey[50],
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.lock, size: 80, color: Colors.teal.shade700),
+              Icon(Icons.lock, size: 80, color: Colors.teal),
               const SizedBox(height: 24),
               const Text(
                 'Vault Locked',
@@ -224,12 +230,11 @@ class _VaultScreenState extends State<VaultScreen> with WidgetsBindingObserver {
               const SizedBox(height: 32),
               ElevatedButton.icon(
                 onPressed: _authenticateUser,
-                icon: const Icon(Icons.fingerprint, color: Colors.teal),
-                label: const Text(
-                  'Unlock',
-                  style: TextStyle(color: Colors.teal),
-                ),
+                icon: const Icon(Icons.fingerprint),
+                label: const Text('Unlock'),
                 style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.teal,
+                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 32,
                     vertical: 12,
@@ -252,13 +257,13 @@ class _VaultScreenState extends State<VaultScreen> with WidgetsBindingObserver {
 
     // Show vault content after successful authentication
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: const Text(
           "Secure Digital Vault",
           style: TextStyle(fontWeight: FontWeight.w700),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.grey[50],
         foregroundColor: Colors.teal,
         scrolledUnderElevation: 0,
         centerTitle: true,
@@ -279,7 +284,7 @@ class _VaultScreenState extends State<VaultScreen> with WidgetsBindingObserver {
       ),
 
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.teal.shade500,
+        backgroundColor: Colors.teal,
         foregroundColor: Colors.white,
         shape: const CircleBorder(),
         onPressed: _chooseAddOption,
@@ -320,11 +325,12 @@ class _VaultScreenState extends State<VaultScreen> with WidgetsBindingObserver {
       child: SizedBox(
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: Colors.grey.shade200,
+            color: Colors.white,
             borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: Colors.teal, width: 1.5),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.7),
+                color: Colors.teal.withOpacity(0.3),
                 blurRadius: 10,
                 offset: Offset(0, 1),
               ),
@@ -338,7 +344,6 @@ class _VaultScreenState extends State<VaultScreen> with WidgetsBindingObserver {
                 children: [
                   Icon(_getIcon(item.fileType), size: 36, color: Colors.teal),
                   const SizedBox(width: 14),
-
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -369,7 +374,7 @@ class _VaultScreenState extends State<VaultScreen> with WidgetsBindingObserver {
                     ),
                   ),
                   IconButton(
-                    icon: Icon(Icons.delete_rounded, color: Colors.teal),
+                    icon: Icon(Icons.delete, color: Colors.teal),
                     onPressed: () => _deleteDocument(index),
                   ),
                 ],
@@ -401,8 +406,9 @@ class _VaultScreenState extends State<VaultScreen> with WidgetsBindingObserver {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            SizedBox(height: 15),
             ListTile(
-              leading: const Icon(Icons.camera_alt),
+              leading: const Icon(Icons.camera, color: Colors.teal),
               title: const Text("Take Photo"),
               onTap: () {
                 Navigator.pop(context);
@@ -410,7 +416,7 @@ class _VaultScreenState extends State<VaultScreen> with WidgetsBindingObserver {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.upload_file),
+              leading: const Icon(Icons.upload_file, color: Colors.teal),
               title: const Text("Pick a File"),
               onTap: () {
                 Navigator.pop(context);
@@ -449,7 +455,11 @@ class _VaultScreenState extends State<VaultScreen> with WidgetsBindingObserver {
     String? type = await showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text("Select Document Type"),
+        backgroundColor: Colors.white,
+        title: const Text(
+          "Select Document Type",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

@@ -16,10 +16,14 @@ class VaultItem extends HiveObject {
   @HiveField(3)
   DateTime createdAt;
 
+  @HiveField(4)
+  String userId; // Added userId field
+
   VaultItem({
     required this.fileName,
     required this.encryptedPath,
     required this.fileType,
     required this.createdAt,
+    required this.userId, // Added userId parameter
   });
 }

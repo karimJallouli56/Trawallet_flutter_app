@@ -7,6 +7,7 @@ class AppUser {
   final String email;
   final String phone;
   final String country;
+  final String gender; // Added gender field
   final int points;
   final DateTime createdAt;
   final DateTime? updatedAt;
@@ -27,6 +28,7 @@ class AppUser {
     required this.email,
     required this.phone,
     required this.country,
+    required this.gender, // Added required gender parameter
     this.points = 0,
     DateTime? createdAt,
     this.updatedAt,
@@ -46,6 +48,7 @@ class AppUser {
       email: data['email'] ?? '',
       phone: data['phone'] ?? '',
       country: data['country'] ?? '',
+      gender: data['gender'] ?? '', // Added gender field parsing
       points: data['points'] ?? 0,
       createdAt: _parseTimestamp(data['createdAt']),
       updatedAt: _parseTimestamp(data['updatedAt']),
@@ -82,6 +85,7 @@ class AppUser {
       'email': email,
       'phone': phone,
       'country': country,
+      'gender': gender, // Added gender field to map
       'points': points,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,
@@ -101,6 +105,7 @@ class AppUser {
     String? email,
     String? phone,
     String? country,
+    String? gender, // Added gender to copyWith
     int? points,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -117,6 +122,7 @@ class AppUser {
       email: email ?? this.email,
       phone: phone ?? this.phone,
       country: country ?? this.country,
+      gender: gender ?? this.gender, // Added gender to copyWith
       points: points ?? this.points,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -145,6 +151,6 @@ class AppUser {
   @override
   String toString() {
     return 'AppUser(id: $id, name: $name, email: $email, '
-        'points: $points, visitedCountries: $visitedCountries)';
+        'points: $points, visitedCountries: $visitedCountries, gender: $gender)';
   }
 }

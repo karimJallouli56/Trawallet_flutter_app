@@ -19,6 +19,7 @@ class AuthService {
     required String name,
     required String phone,
     required String country,
+    required String gender, // Added gender parameter
   }) async {
     try {
       // Create Firebase Auth user
@@ -35,7 +36,10 @@ class AuthService {
         "email": email,
         "phone": phone,
         "country": country,
-        "userAvatar": null,
+        "gender": gender, // Added gender field
+        "userAvatar": gender == 'Female'
+            ? 'https://nydkmuqxbdmosymchola.supabase.co/storage/v1/object/public/post-images/avatars/avatar_default_women.png'
+            : 'https://nydkmuqxbdmosymchola.supabase.co/storage/v1/object/public/post-images/avatars/avatar_default_man.png',
         "bio": "",
         "interests": [],
         "visitedCountries": 0,

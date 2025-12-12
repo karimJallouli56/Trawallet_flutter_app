@@ -20,6 +20,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _phoneController = TextEditingController();
   final _countryController = TextEditingController();
 
+  String? _selectedgender; // Added gender selection variable
   bool _isLoading = false;
 
   @override
@@ -31,12 +32,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _nameController.dispose();
     _phoneController.dispose();
     _countryController.dispose();
-
     super.dispose();
   }
 
   Future<void> _signUp() async {
     if (!_formKey.currentState!.validate()) return;
+
+    // Validate gender selection
+    if (_selectedgender == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select your gender')),
+      );
+      return;
+    }
 
     setState(() => _isLoading = true);
 
@@ -48,6 +56,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         name: _nameController.text.trim(),
         phone: _phoneController.text.trim(),
         country: _countryController.text.trim(),
+        gender: _selectedgender!, // Pass gender to auth service
       );
 
       if (mounted) {
@@ -92,18 +101,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (value == null || value.isEmpty) {
       return 'Please confirm your password';
     }
-
-    // Check if passwords match
     if (value != _passwordController.text) {
       return 'Passwords do not match';
     }
-
     return null;
   }
 
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: SafeArea(
@@ -114,10 +121,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
               key: _formKey,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-
                 children: [
                   Image.asset('assets/logos/trawallet.png', height: 70),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   Text(
                     'Welcome Back',
                     style: TextStyle(
@@ -128,7 +134,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'Sign in to continue',
+                    'Sign up to continue',
                     style: TextStyle(fontSize: 16, color: Colors.grey),
                     textAlign: TextAlign.center,
                   ),
@@ -182,7 +188,46 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         : null,
                   ),
                   const SizedBox(height: 20),
-                  // Email Input Field
+
+                  // gender Dropdown Field
+                  DropdownButtonFormField<String>(
+                    value: _selectedgender,
+                    decoration: InputDecoration(
+                      labelText: 'gender',
+                      prefixIcon: Icon(
+                        Icons.person_outline,
+                        color: Colors.teal,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                          color: Colors.teal,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'Male', child: Text('Male')),
+                      DropdownMenuItem(value: 'Female', child: Text('Female')),
+                      DropdownMenuItem(value: 'Other', child: Text('Other')),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedgender = value;
+                      });
+                    },
+                    validator: (value) =>
+                        value == null ? 'Please select your gender' : null,
+                  ),
+                  const SizedBox(height: 20),
+
                   InputField(
                     label: 'Email Address',
                     icon: Icons.email,
@@ -192,7 +237,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     validator: _emailValidator,
                   ),
                   const SizedBox(height: 20),
-                  // Password Input Field
+
                   InputField(
                     label: 'Password',
                     icon: Icons.lock,
@@ -202,7 +247,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     validator: _passwordValidator,
                   ),
                   const SizedBox(height: 20),
-                  // Confirm Password Input Field
+
                   InputField(
                     label: 'Confirm Password',
                     icon: Icons.lock,
@@ -212,6 +257,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     validator: _confirmPasswordValidator,
                   ),
                   const SizedBox(height: 24),
+
                   SizedBox(
                     width: size.width * 0.9,
                     height: size.height * 0.06,
@@ -231,16 +277,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               width: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: Colors.teal,
+                                color: Colors.white,
                               ),
                             )
                           : const Text(
-                              'Sign In',
+                              'Sign Up',
                               style: TextStyle(fontSize: 16),
                             ),
                     ),
                   ),
                   const SizedBox(height: 10),
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

@@ -21,13 +21,14 @@ class VaultItemAdapter extends TypeAdapter<VaultItem> {
       encryptedPath: fields[1] as String,
       fileType: fields[2] as String,
       createdAt: fields[3] as DateTime,
+      userId: fields[4] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, VaultItem obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(5)
       ..writeByte(0)
       ..write(obj.fileName)
       ..writeByte(1)
@@ -35,7 +36,9 @@ class VaultItemAdapter extends TypeAdapter<VaultItem> {
       ..writeByte(2)
       ..write(obj.fileType)
       ..writeByte(3)
-      ..write(obj.createdAt);
+      ..write(obj.createdAt)
+      ..writeByte(4)
+      ..write(obj.userId);
   }
 
   @override

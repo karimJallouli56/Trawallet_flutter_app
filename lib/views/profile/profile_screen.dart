@@ -381,10 +381,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
       leading: Container(
         padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: Colors.teal.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(8),
-        ),
         child: Icon(icon, color: Colors.teal, size: 22),
       ),
       title: Text(
@@ -412,10 +408,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
       leading: Container(
         padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: Colors.teal.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(8),
-        ),
+
         child: const Icon(Icons.language, color: Colors.teal, size: 22),
       ),
       title: const Text(
@@ -450,10 +443,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.teal.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
+
             child: const Icon(
               Icons.dark_mode_outlined,
               color: Colors.teal,

@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:trawallet_final_version/views/home/components/capitalizeWords.dart';
+import 'package:photo_view/photo_view.dart';
 
 class ImageViewerScreen extends StatelessWidget {
   final File file;
@@ -14,28 +14,34 @@ class ImageViewerScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text(
-          'My ' + capitalizeWords(fileType),
-          style: TextStyle(fontWeight: FontWeight.w700),
+    return Stack(
+      children: [
+        PhotoView(
+          heroAttributes: PhotoViewHeroAttributes(
+            tag: file,
+          ), // même identifiant utilisé dans le widget Hero
+          imageProvider: FileImage(file),
+          backgroundDecoration: BoxDecoration(color: Colors.grey[50]),
         ),
-      ),
-      body: InteractiveViewer(
-        panEnabled: true,
-        scaleEnabled: true,
-        minScale: 0.5,
-        maxScale: 4.0,
-        child: SizedBox(
-          width: size.width,
-          height: size.height,
-          child: Image.file(file, fit: BoxFit.contain),
+        // Un bouton "X" pour fermer l'écran
+        Positioned(
+          top: 40,
+          right: 10,
+          child: Container(
+            padding: EdgeInsets.all(4), // space around the icon
+            decoration: BoxDecoration(
+              color: Colors.teal.withOpacity(0.15), // soft teal background
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: Icon(Icons.close, color: Colors.teal, size: 30),
+              padding: EdgeInsets.zero, // remove default IconButton padding
+              constraints: BoxConstraints(), // fix icon centering
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
 }
