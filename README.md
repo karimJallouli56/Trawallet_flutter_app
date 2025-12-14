@@ -1,3 +1,11 @@
 # trawallet_final_version
 
 A new Flutter project.
+
+I have pushed my project to GitHub.
+If you encounter any issues when starting the project, please visit the GitHub repository.
+
+link :
+
+#########file: firebase.json
+{"flutter":{"platforms":{"android":{"default":{"projectId":"trawallet-1","appId":"1:717620846111:android:f065cb2ad8bcc84b63bf2a","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"trawallet-1","configurations":{"android":"1:717620846111:android:f065cb2ad8bcc84b63bf2a","ios":"1:717620846111:ios:fbb5620adc31084c63bf2a","macos":"1:717620846111:ios:fbb5620adc31084c63bf2a","web":"1:717620846111:web:3040f323fb1b72e463bf2a","windows":"1:717620846111:web:c8b58cf92d85a0cf63bf2a"}}}}}}
