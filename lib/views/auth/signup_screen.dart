@@ -19,8 +19,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _countryController = TextEditingController();
-
-  String? _selectedgender; // Added gender selection variable
+  String? _selectedgender;
   bool _isLoading = false;
 
   @override
@@ -38,7 +37,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Future<void> _signUp() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // Validate gender selection
     if (_selectedgender == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select your gender')),
@@ -56,7 +54,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         name: _nameController.text.trim(),
         phone: _phoneController.text.trim(),
         country: _countryController.text.trim(),
-        gender: _selectedgender!, // Pass gender to auth service
+        gender: _selectedgender!,
       );
 
       if (mounted) {
@@ -76,7 +74,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
   }
 
-  // Custom validator methods
   String? _emailValidator(String? value) {
     if (value == null || value.isEmpty) {
       return 'Please enter your email';
@@ -189,21 +186,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  // gender Dropdown Field
                   DropdownButtonFormField<String>(
                     value: _selectedgender,
                     decoration: InputDecoration(
                       labelText: 'gender',
-                      prefixIcon: Icon(
-                        Icons.person_outline,
-                        color: Colors.teal,
-                      ),
+                      prefixIcon: Icon(Icons.person, color: Colors.teal),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
+                        borderSide: BorderSide(color: Colors.teal),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),

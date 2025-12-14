@@ -24,9 +24,7 @@ class _VaultScreenState extends State<VaultScreen> with WidgetsBindingObserver {
   bool _isAuthenticated = false;
   bool _isLoading = true;
   DateTime? _lastAuthTime;
-  final Duration _authTimeout = const Duration(
-    minutes: 5,
-  ); // Re-auth after 5 min
+  final Duration _authTimeout = const Duration(minutes: 5);
 
   @override
   void initState() {
@@ -41,7 +39,6 @@ class _VaultScreenState extends State<VaultScreen> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  // Re-authenticate when app comes back to foreground
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
@@ -49,7 +46,6 @@ class _VaultScreenState extends State<VaultScreen> with WidgetsBindingObserver {
     }
   }
 
-  // Check if authentication has timed out
   void _checkAuthTimeout() {
     if (_lastAuthTime != null) {
       final timeSinceAuth = DateTime.now().difference(_lastAuthTime!);
@@ -62,12 +58,10 @@ class _VaultScreenState extends State<VaultScreen> with WidgetsBindingObserver {
     }
   }
 
-  // Main authentication method
   Future<void> _authenticateUser() async {
     setState(() => _isLoading = true);
 
     try {
-      // Check if device supports biometrics
       final bool canAuthenticateWithBiometrics = await auth.canCheckBiometrics;
       final bool canAuthenticate =
           canAuthenticateWithBiometrics || await auth.isDeviceSupported();
@@ -79,7 +73,6 @@ class _VaultScreenState extends State<VaultScreen> with WidgetsBindingObserver {
         return;
       }
 
-      // Get available biometrics
       final List<BiometricType> availableBiometrics = await auth
           .getAvailableBiometrics();
 
@@ -90,10 +83,9 @@ class _VaultScreenState extends State<VaultScreen> with WidgetsBindingObserver {
         return;
       }
 
-      // Authenticate
       final bool didAuthenticate = await auth.authenticate(
         localizedReason: 'Please authenticate to access your secure vault',
-        biometricOnly: false, // Allows PIN/Pattern as fallback
+        biometricOnly: false,
       );
 
       setState(() {
@@ -136,7 +128,7 @@ class _VaultScreenState extends State<VaultScreen> with WidgetsBindingObserver {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              Navigator.of(context).pop(); // Exit vault screen
+              Navigator.of(context).pop();
             },
             child: const Text('OK'),
           ),
@@ -162,7 +154,7 @@ class _VaultScreenState extends State<VaultScreen> with WidgetsBindingObserver {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              Navigator.of(context).pop(); // Exit vault screen
+              Navigator.of(context).pop();
             },
             child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
           ),
@@ -181,7 +173,6 @@ class _VaultScreenState extends State<VaultScreen> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
-    // Show loading screen during authentication
     if (_isLoading) {
       return Scaffold(
         backgroundColor: Colors.grey[50],
@@ -204,7 +195,6 @@ class _VaultScreenState extends State<VaultScreen> with WidgetsBindingObserver {
       );
     }
 
-    // Show locked screen if not authenticated
     if (!_isAuthenticated) {
       return Scaffold(
         backgroundColor: Colors.grey[50],
@@ -255,7 +245,6 @@ class _VaultScreenState extends State<VaultScreen> with WidgetsBindingObserver {
       );
     }
 
-    // Show vault content after successful authentication
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -268,7 +257,6 @@ class _VaultScreenState extends State<VaultScreen> with WidgetsBindingObserver {
         scrolledUnderElevation: 0,
         centerTitle: true,
         actions: [
-          // Lock button to manually lock the vault
           IconButton(
             icon: const Icon(Icons.lock),
 
@@ -339,7 +327,7 @@ class _VaultScreenState extends State<VaultScreen> with WidgetsBindingObserver {
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: SizedBox(
-              width: double.infinity, // same behavior as Container expanding
+              width: double.infinity,
               child: Row(
                 children: [
                   Icon(_getIcon(item.fileType), size: 36, color: Colors.teal),

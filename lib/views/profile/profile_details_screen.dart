@@ -34,13 +34,11 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = authService.currentUser;
-
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: const Text(
-          'Profile Details',
+          'Profile',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         scrolledUnderElevation: 0,
@@ -69,13 +67,11 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
           : SingleChildScrollView(
               child: Column(
                 children: [
-                  // Profile Header
                   Container(
                     width: double.infinity,
                     child: Column(
                       children: [
                         const SizedBox(height: 30),
-                        // Profile Picture
                         Hero(
                           tag: 'profile_pic',
                           child: Container(
@@ -104,7 +100,6 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                           ),
                         ),
                         const SizedBox(height: 15),
-                        // User Name
                         Text(
                           capitalizeWords(appUser?.name ?? 'User'),
                           style: const TextStyle(
@@ -115,7 +110,6 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                           ),
                         ),
                         const SizedBox(height: 5),
-                        // Username
                         Text(
                           '@${appUser?.username ?? 'username'}',
                           style: TextStyle(
@@ -124,7 +118,6 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        // Bio (Instagram style)
                         if (appUser?.bio != null &&
                             appUser!.bio!.isNotEmpty) ...[
                           const SizedBox(height: 15),
@@ -145,13 +138,10 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                       ],
                     ),
                   ),
-
-                  // Content
                   Padding(
                     padding: const EdgeInsets.all(20),
                     child: Column(
                       children: [
-                        // Stats Cards
                         Row(
                           children: [
                             Expanded(
@@ -185,7 +175,6 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
 
                         const SizedBox(height: 20),
 
-                        // Interests Section (if exists)
                         if (appUser?.interests.isNotEmpty ?? false) ...[
                           _buildSectionCard(
                             title: 'Interests',
@@ -273,7 +262,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
 
                         const SizedBox(height: 20),
 
-                        // Travel Story Section (if exists)
+                        // Travel Story Section
                         if (appUser?.hasTravelStory ?? false) ...[
                           _buildSectionCard(
                             title: 'Travel Story',
@@ -404,41 +393,6 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
             ],
           ),
           actions: [
-            // TextButton(
-            //   onPressed: () => Navigator.of(context).pop(),
-            //   child: Text(
-            //     'Cancel',
-            //     style: TextStyle(
-            //       color: Colors.grey[600],
-            //       fontSize: 16,
-            //       fontWeight: FontWeight.w600,
-            //     ),
-            //   ),
-            // ),
-            // ElevatedButton(
-            //   onPressed: () {
-            //     Navigator.of(context).pop();
-            //     _deleteAccount();
-            //   },
-            //   style: ElevatedButton.styleFrom(
-            //     backgroundColor: Colors.red,
-            //     shape: RoundedRectangleBorder(
-            //       borderRadius: BorderRadius.circular(8),
-            //     ),
-            //     padding: const EdgeInsets.symmetric(
-            //       horizontal: 24,
-            //       vertical: 12,
-            //     ),
-            //   ),
-            //   child: const Text(
-            //     'Delete',
-            //     style: TextStyle(
-            //       color: Colors.white,
-            //       fontSize: 16,
-            //       fontWeight: FontWeight.w600,
-            //     ),
-            //   ),
-            // ),
             Padding(
               padding: EdgeInsets.all(20),
               child: Row(
@@ -518,43 +472,13 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
       isLoading = true;
     });
 
-    try {
-      final currentUid = authService.currentUser?.uid;
-      if (currentUid == null) return;
+    final currentUid = authService.currentUser?.uid;
+    if (currentUid == null) return;
+    await userService.deleteUser(currentUid);
+    await authService.deleteAccount();
 
-      // Delete user data from Firestore
-      await userService.deleteUser(currentUid);
-
-      // Delete authentication account
-      await authService.deleteAccount();
-
-      if (mounted) {
-        // Navigate to login/welcome screen
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          '/login', // Replace with your login route
-          (route) => false,
-        );
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Account deleted successfully'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to delete account: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+    if (mounted) {
+      Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
     }
   }
 

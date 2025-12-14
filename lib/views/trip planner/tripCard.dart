@@ -1,4 +1,3 @@
-// TripCard with integrated ConfirmationCard
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:trawallet_final_version/models/trip.dart';
@@ -33,7 +32,6 @@ class TripCard extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Handle bar
             Container(
               margin: EdgeInsets.only(top: 12),
               width: 40,
@@ -213,7 +211,7 @@ class TripCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Modern gradient header
+                  // header
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(

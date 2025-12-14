@@ -8,7 +8,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/vault_item.dart';
 
 class VaultService {
-  // Singleton pattern
   static final VaultService instance = VaultService._internal();
   VaultService._internal();
   factory VaultService() => instance;
@@ -37,16 +36,13 @@ class VaultService {
     _aesKey = Key(base64Url.decode(keyString));
   }
 
-  // Get current user ID
   String? get _currentUserId => _auth.currentUser?.uid;
 
-  // Get all vault items for current user only
   List<VaultItem> getAll() {
     if (_currentUserId == null) return [];
     return box.values.where((item) => item.userId == _currentUserId).toList();
   }
 
-  // Get vault items by type for current user
   List<VaultItem> getByType(String fileType) {
     if (_currentUserId == null) return [];
     return box.values
@@ -56,7 +52,6 @@ class VaultService {
         .toList();
   }
 
-  // Add document
   Future<void> addVaultItem(File file, String fileType) async {
     if (_currentUserId == null) {
       throw Exception('User not authenticated');
@@ -68,12 +63,11 @@ class VaultService {
       encryptedPath: encryptedPath,
       fileType: fileType,
       createdAt: DateTime.now(),
-      userId: _currentUserId!, // Add current user ID
+      userId: _currentUserId!,
     );
     await box.add(item);
   }
 
-  // Update vault item at index (only if it belongs to current user)
   Future<void> updateVaultItemAt(int index, VaultItem item) async {
     if (_currentUserId == null) {
       throw Exception('User not authenticated');
@@ -87,7 +81,6 @@ class VaultService {
     await box.putAt(index, item);
   }
 
-  // Delete vault item at index (only if it belongs to current user)
   Future<void> deleteAt(int index) async {
     if (_currentUserId == null) {
       throw Exception('User not authenticated');
@@ -105,7 +98,6 @@ class VaultService {
     await box.deleteAt(index);
   }
 
-  // Delete by VaultItem object (safer method)
   Future<void> deleteItem(VaultItem item) async {
     if (_currentUserId == null) {
       throw Exception('User not authenticated');
@@ -120,7 +112,6 @@ class VaultService {
     await item.delete();
   }
 
-  // Clear all vault items for current user (useful for logout/account deletion)
   Future<void> clearCurrentUserData() async {
     if (_currentUserId == null) return;
 
@@ -132,7 +123,6 @@ class VaultService {
     }
   }
 
-  // Encrypt file and save locally
   Future<String> _encryptAndSaveFile(File file) async {
     if (_currentUserId == null) {
       throw Exception('User not authenticated');
@@ -142,9 +132,7 @@ class VaultService {
     final encrypter = Encrypter(AES(_aesKey));
     final bytes = await file.readAsBytes();
     final encrypted = encrypter.encryptBytes(bytes, iv: iv);
-
     final dir = await getApplicationDocumentsDirectory();
-    // Add userId to filename to prevent conflicts between users
     final fileName = '${_currentUserId}_${file.uri.pathSegments.last}';
     final encryptedFile = File('${dir.path}/$fileName.enc');
     await encryptedFile.writeAsBytes(iv.bytes + encrypted.bytes);
@@ -152,13 +140,11 @@ class VaultService {
     return encryptedFile.path;
   }
 
-  // Decrypt file (only if it belongs to current user)
   Future<File> decryptFile(String encryptedPath) async {
     if (_currentUserId == null) {
       throw Exception('User not authenticated');
     }
 
-    // Verify the file belongs to current user
     final matchingItem = box.values.firstWhere(
       (item) =>
           item.encryptedPath == encryptedPath && item.userId == _currentUserId,

@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 class Navbar extends StatefulWidget {
@@ -59,7 +57,6 @@ class _NavbarState extends State<Navbar> {
     );
   }
 
-  // ICON + HORIZONTAL LABEL
   Widget _navItem({required IconData icon, required int index}) {
     final bool isActive = widget.activeScreenId == index;
 
@@ -109,7 +106,7 @@ class _NavbarState extends State<Navbar> {
       case 2:
         return 'Community';
       case 3:
-        return 'Profile';
+        return 'Account';
       default:
         return '';
     }

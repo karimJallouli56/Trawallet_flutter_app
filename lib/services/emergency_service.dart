@@ -4,13 +4,13 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:http/http.dart' as http;
 import 'package:trawallet_final_version/models/emergency.dart';
+import 'package:trawallet_final_version/models/travelerLocation.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class EmergencyService {
   static const String _apiBaseUrl =
       'https://emergencynumberapi.com/api/country';
 
-  // Check and request location permission
   Future<bool> checkLocationPermission() async {
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
@@ -32,7 +32,6 @@ class EmergencyService {
     return true;
   }
 
-  // Get current traveler location
   Future<TravelerLocation?> getTravelerLocation() async {
     try {
       final hasPermission = await checkLocationPermission();
@@ -44,7 +43,6 @@ class EmergencyService {
         desiredAccuracy: LocationAccuracy.high,
       );
 
-      // Get address details
       List<Placemark> placemarks = await placemarkFromCoordinates(
         position.latitude,
         position.longitude,
@@ -71,7 +69,6 @@ class EmergencyService {
     }
   }
 
-  // Fetch emergency numbers from API
   Future<Emergency?> fetchEmergencyNumbers(String countryCode) async {
     try {
       final response = await http.get(Uri.parse('$_apiBaseUrl/$countryCode'));
@@ -93,7 +90,6 @@ class EmergencyService {
     }
   }
 
-  // Get local emergency services for current location
   Future<Emergency?> getEmergencys() async {
     final location = await getTravelerLocation();
     if (location == null) return null;
@@ -101,7 +97,6 @@ class EmergencyService {
     return await fetchEmergencyNumbers(location.countryCode);
   }
 
-  // Make emergency call
   Future<void> makeEmergencyCall(String phoneNumber) async {
     try {
       final uri = Uri.parse('tel:$phoneNumber');

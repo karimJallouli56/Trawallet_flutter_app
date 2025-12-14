@@ -13,7 +13,7 @@ class Post {
   final int commentsCount;
   final DateTime createdAt;
   final bool isLikedByCurrentUser;
-  final List<String> likedBy; // List of user IDs who liked this post
+  final List<String> likedBy;
 
   Post({
     required this.postId,
@@ -31,9 +31,6 @@ class Post {
     this.likedBy = const [],
   });
 
-  // ========================================================================
-  // FROM FIRESTORE - Convert Firestore document to Post object
-  // ========================================================================
   factory Post.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
 
@@ -53,7 +50,6 @@ class Post {
     );
   }
 
-  // Alternative: From Firestore with current user check
   factory Post.fromFirestoreWithUser(
     DocumentSnapshot doc,
     String currentUserId,
@@ -78,9 +74,6 @@ class Post {
     );
   }
 
-  // ========================================================================
-  // TO FIRESTORE - Convert Post object to Firestore map
-  // ========================================================================
   Map<String, dynamic> toFirestore() {
     return {
       'postId': postId,
@@ -98,9 +91,6 @@ class Post {
     };
   }
 
-  // ========================================================================
-  // COPY WITH - Create a copy with modified fields
-  // ========================================================================
   Post copyWith({
     String? postId,
     String? userId,
@@ -133,9 +123,6 @@ class Post {
     );
   }
 
-  // ========================================================================
-  // FROM JSON - For local storage or API responses
-  // ========================================================================
   factory Post.fromJson(Map<String, dynamic> json) {
     return Post(
       postId: json['postId'] ?? '',
@@ -155,9 +142,6 @@ class Post {
     );
   }
 
-  // ========================================================================
-  // TO JSON - For local storage or API requests
-  // ========================================================================
   Map<String, dynamic> toJson() {
     return {
       'postId': postId,
@@ -174,9 +158,6 @@ class Post {
       'likedBy': likedBy,
     };
   }
-  // ========================================================================
-  // ADD POST - Create a new post in Firestore
-  // ========================================================================
 
   static Future<String> addPost({
     required String userId,
@@ -213,9 +194,6 @@ class Post {
     }
   }
 
-  // ========================================================================
-  // READ - Get a single post by ID
-  // ========================================================================
   static Future<Post?> getPost(String postId) async {
     try {
       final firestore = FirebaseFirestore.instance;
@@ -230,9 +208,6 @@ class Post {
     }
   }
 
-  // ========================================================================
-  // READ - Get all posts (as stream for real-time updates)
-  // ========================================================================
   static Stream<List<Post>> getAllPostsWithUser(String currentUserId) {
     try {
       final firestore = FirebaseFirestore.instance;
@@ -250,9 +225,6 @@ class Post {
     }
   }
 
-  // ========================================================================
-  // READ - Get posts by user ID
-  // ========================================================================
   static Stream<List<Post>> getUserPosts(String userId) {
     try {
       final firestore = FirebaseFirestore.instance;
@@ -270,9 +242,6 @@ class Post {
     }
   }
 
-  // ========================================================================
-  // READ - Get posts by category
-  // ========================================================================
   static Stream<List<Post>> getPostsByCategory(String category) {
     try {
       final firestore = FirebaseFirestore.instance;
@@ -290,9 +259,6 @@ class Post {
     }
   }
 
-  // ========================================================================
-  // UPDATE - Update existing post
-  // ========================================================================
   static Future<void> updatePost(
     String postId, {
     String? content,
@@ -317,9 +283,6 @@ class Post {
     }
   }
 
-  // ========================================================================
-  // UPDATE - Toggle like on post
-  // ========================================================================
   static Future<void> toggleLike(String postId, String userId) async {
     try {
       final firestore = FirebaseFirestore.instance;
@@ -357,9 +320,6 @@ class Post {
     }
   }
 
-  // ========================================================================
-  // UPDATE - Increment comment count
-  // ========================================================================
   static Future<void> incrementCommentCount(String postId) async {
     try {
       final firestore = FirebaseFirestore.instance;
@@ -371,9 +331,6 @@ class Post {
     }
   }
 
-  // ========================================================================
-  // UPDATE - Decrement comment count
-  // ========================================================================
   static Future<void> decrementCommentCount(String postId) async {
     try {
       final firestore = FirebaseFirestore.instance;
@@ -385,9 +342,6 @@ class Post {
     }
   }
 
-  // ========================================================================
-  // DELETE - Delete a post
-  // ========================================================================
   static Future<void> deletePost(String postId) async {
     try {
       final firestore = FirebaseFirestore.instance;
@@ -397,10 +351,7 @@ class Post {
     }
   }
 
-  // ========================================================================
   // INSTANCE METHODS
-  // ========================================================================
-
   // Save current instance to Firestore
   Future<void> save() async {
     try {

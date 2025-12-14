@@ -1,8 +1,8 @@
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:trawallet_final_version/models/transport.dart';
 import 'package:trawallet_final_version/services/transport_service.dart';
+import 'package:trawallet_final_version/views/transport/transportInfo.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class TransportScreen extends StatefulWidget {
@@ -66,14 +66,14 @@ class _TransportScreenState extends State<TransportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: Text(
           'Flight & Transport Tracker',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.grey[50],
         foregroundColor: Colors.teal,
         scrolledUnderElevation: 0,
         leading: IconButton(
@@ -101,7 +101,7 @@ class _TransportScreenState extends State<TransportScreen> {
                 controller: _searchController,
                 decoration: InputDecoration(
                   filled: true,
-                  fillColor: Colors.teal.shade50,
+                  fillColor: Colors.white,
                   hintText: 'Enter flight or train number...',
                   hintStyle: TextStyle(color: Colors.teal.shade700),
                   prefixIcon: Icon(Icons.search, color: Colors.teal, size: 26),
@@ -226,7 +226,7 @@ class _TransportScreenState extends State<TransportScreen> {
                         Text(
                           'Track Your Journey',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: Colors.teal.shade500,
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
@@ -234,7 +234,7 @@ class _TransportScreenState extends State<TransportScreen> {
                         SizedBox(height: 8),
                         Text(
                           'Enter flight or train number',
-                          style: TextStyle(color: Colors.white70),
+                          style: TextStyle(color: Colors.teal),
                         ),
                         SizedBox(height: 16),
                         Text(
@@ -286,7 +286,6 @@ class _TransportScreenState extends State<TransportScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Header
                                 Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
@@ -328,14 +327,10 @@ class _TransportScreenState extends State<TransportScreen> {
                                         vertical: 6,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: Colors.white70.withOpacity(
-                                          0.2,
-                                        ), // semi-transparent
+                                        color: Colors.white70.withOpacity(0.2),
                                         borderRadius: BorderRadius.circular(20),
                                         border: Border.all(
-                                          color: Colors.white.withOpacity(
-                                            0.6,
-                                          ), // subtle border
+                                          color: Colors.white.withOpacity(0.6),
                                         ),
                                       ),
                                       child: Row(
@@ -354,8 +349,6 @@ class _TransportScreenState extends State<TransportScreen> {
                                   ],
                                 ),
                                 SizedBox(height: 24),
-
-                                // Route
                                 Text(
                                   transport.routeInfo,
                                   style: TextStyle(
@@ -365,12 +358,10 @@ class _TransportScreenState extends State<TransportScreen> {
                                   ),
                                 ),
                                 SizedBox(height: 16),
-
-                                // Departure & Arrival
                                 Row(
                                   children: [
                                     Expanded(
-                                      child: _TransportInfo(
+                                      child: TransportInfo(
                                         icon: Icons.flight_takeoff,
                                         label: 'Departure',
                                         airport: transport.departureAirport,
@@ -381,7 +372,7 @@ class _TransportScreenState extends State<TransportScreen> {
                                     ),
                                     SizedBox(width: 16),
                                     Expanded(
-                                      child: _TransportInfo(
+                                      child: TransportInfo(
                                         icon: Icons.flight_land,
                                         label: 'Arrival',
                                         airport: transport.arrivalAirport,
@@ -390,8 +381,6 @@ class _TransportScreenState extends State<TransportScreen> {
                                     ),
                                   ],
                                 ),
-
-                                // Delay Alert
                                 if (transport.isDelayed) ...[
                                   SizedBox(height: 16),
                                   Container(
@@ -426,30 +415,6 @@ class _TransportScreenState extends State<TransportScreen> {
                                 ],
 
                                 SizedBox(height: 16),
-
-                                // Route Button
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: ElevatedButton.icon(
-                                    onPressed: () =>
-                                        openRoute(transport.departureCity),
-                                    icon: Icon(Icons.directions),
-                                    label: Text(
-                                      'Get Route to Departure',
-                                      style: TextStyle(fontSize: 16),
-                                    ),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.teal,
-                                      foregroundColor: Colors.white,
-                                      padding: EdgeInsets.symmetric(
-                                        vertical: 14,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(14),
-                                      ),
-                                    ),
-                                  ),
-                                ),
                               ],
                             ),
                           ),
@@ -470,92 +435,5 @@ class _TransportScreenState extends State<TransportScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
-  }
-}
-
-class _TransportInfo extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String airport;
-  final String time;
-  final String? terminal;
-  final String? gate;
-
-  _TransportInfo({
-    required this.icon,
-    required this.label,
-    required this.airport,
-    required this.time,
-    this.terminal,
-    this.gate,
-  });
-
-  String formatTime(String isoTime) {
-    try {
-      final dateTime = DateTime.parse(isoTime);
-      return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
-    } catch (e) {
-      return time;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(10),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-        child: Container(
-          padding: EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade700.withOpacity(0.4), // semi-transparent
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.3), // subtle border
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(icon, color: Colors.teal.shade100, size: 20),
-                  SizedBox(width: 6),
-                  Text(
-                    label,
-                    style: TextStyle(color: Colors.white54, fontSize: 12),
-                  ),
-                ],
-              ),
-              SizedBox(height: 8),
-              Text(
-                airport,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 4),
-              Text(
-                formatTime(time),
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              if (terminal != null || gate != null) ...[
-                SizedBox(height: 4),
-                Text(
-                  '${terminal != null ? 'Terminal $terminal' : ''}${terminal != null && gate != null ? ' • ' : ''}${gate != null ? 'Gate $gate' : ''}',
-                  style: TextStyle(color: Colors.white54, fontSize: 12),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }

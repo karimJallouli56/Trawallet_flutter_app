@@ -10,7 +10,6 @@ class TripService {
     return docRef.id;
   }
 
-  // Add this method to your TripService class (after createTrip, before deleteTrip)
   static Future<void> updateTrip(Trip trip) async {
     await _firestore
         .collection('trips')
@@ -27,14 +26,12 @@ class TripService {
           final trips = snapshot.docs
               .map((doc) => Trip.fromFirestore(doc))
               .toList();
-          // Sort manually in Dart instead of Firestore
           trips.sort((a, b) => b.startDate.compareTo(a.startDate));
           return trips;
         });
   }
 
   static Future<void> deleteTrip(String tripId) async {
-    // Delete all activities first
     final activities = await _firestore
         .collection('activities')
         .where('tripId', isEqualTo: tripId)
@@ -47,7 +44,6 @@ class TripService {
     await _firestore.collection('trips').doc(tripId).delete();
   }
 
-  // NEW: Update trip status (call this daily or when viewing trips)
   static Future<void> updateTripStatus(
     String tripId,
     DateTime startDate,
@@ -59,7 +55,6 @@ class TripService {
     });
   }
 
-  // NEW: Batch update all user's trip statuses
   static Future<void> updateAllUserTripStatuses(String userId) async {
     final snapshot = await _firestore
         .collection('trips')
@@ -73,17 +68,13 @@ class TripService {
       final startDate = (data['startDate'] as Timestamp).toDate();
       final endDate = (data['endDate'] as Timestamp).toDate();
       final newStatus = Trip.calculateStatus(startDate, endDate);
-
-      // Only update if status changed
       if (data['status'] != newStatus) {
         batch.update(doc.reference, {'status': newStatus});
       }
     }
-
     await batch.commit();
   }
 
-  // NEW: Get all completed activities for a user
   static Future<List<Activity>> getCompletedActivities(String userId) async {
     final snapshot = await _firestore
         .collection('activities')
@@ -94,13 +85,10 @@ class TripService {
     final activities = snapshot.docs
         .map((doc) => Activity.fromFirestore(doc))
         .toList();
-    activities.sort(
-      (a, b) => b.dateTime.compareTo(a.dateTime),
-    ); // Most recent first
+    activities.sort((a, b) => b.dateTime.compareTo(a.dateTime));
     return activities;
   }
 
-  // NEW: Get trip statistics for travel career
   static Future<Map<String, int>> getUserTripStats(String userId) async {
     final snapshot = await _firestore
         .collection('trips')
@@ -142,7 +130,6 @@ class TripService {
     };
   }
 
-  // NEW: Get all completed trips for travel career
   static Future<List<Trip>> getCompletedTrips(String userId) async {
     final snapshot = await _firestore
         .collection('trips')
@@ -151,7 +138,7 @@ class TripService {
         .get();
 
     final trips = snapshot.docs.map((doc) => Trip.fromFirestore(doc)).toList();
-    trips.sort((a, b) => b.endDate.compareTo(a.endDate)); // Most recent first
+    trips.sort((a, b) => b.endDate.compareTo(a.endDate));
     return trips;
   }
 }
@@ -175,7 +162,6 @@ class ActivityService {
           final activities = snapshot.docs
               .map((doc) => Activity.fromFirestore(doc))
               .toList();
-          // Sort manually in Dart instead of Firestore
           activities.sort((a, b) => a.dateTime.compareTo(b.dateTime));
           return activities;
         });
@@ -189,7 +175,6 @@ class ActivityService {
       'isCompleted': isCompleted,
     });
 
-    // Award points if completing
     if (isCompleted) {
       final activity = await _firestore
           .collection('activities')

@@ -1,7 +1,3 @@
-// ============================================================================
-// TRIPS LIST SCREEN
-// ============================================================================
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:trawallet_final_version/models/trip.dart';
@@ -11,10 +7,6 @@ import 'package:trawallet_final_version/views/trip%20planner/create_trip_screen.
 import 'package:trawallet_final_version/views/trip%20planner/details_trip_screen.dart';
 import 'package:trawallet_final_version/views/trip%20planner/edit_trip_screen.dart';
 import 'package:trawallet_final_version/views/trip%20planner/tripCard.dart';
-
-// ============================================================================
-// TRIPS LIST SCREEN
-// ============================================================================
 
 class TravelSchedulerScreen extends StatefulWidget {
   const TravelSchedulerScreen({super.key});
@@ -127,7 +119,6 @@ class _TravelSchedulerScreenState extends State<TravelSchedulerScreen> {
                           },
 
                     onEdit: () {
-                      // Navigate to edit screen
                       Navigator.push(
                         context,
                         MaterialPageRoute(

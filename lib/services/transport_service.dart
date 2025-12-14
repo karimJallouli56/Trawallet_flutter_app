@@ -4,16 +4,11 @@ import 'package:http/http.dart' as http;
 import '../models/transport.dart';
 
 class TransportService {
-  // Aviation Stack API (Free tier available)
   final String _flightApiKey = "56f8128dbeab0afeee85241fc57611ba";
   final String _flightBaseUrl = "http://api.aviationstack.com/v1";
 
-  // Automatically detect if input is flight or train
   String detectTransportType(String query) {
-    // Flight patterns: AA123, BA456, flight numbers typically 2-4 letters + numbers
     final flightPattern = RegExp(r'^[A-Z]{2,3}\d{1,4}$', caseSensitive: false);
-
-    // Train patterns: ICE123, TGV456, or longer alphanumeric
     if (flightPattern.hasMatch(query.replaceAll(' ', ''))) {
       return 'flight';
     }
@@ -58,12 +53,7 @@ class TransportService {
 
   Future<List<Transport>> fetchTrains(String trainNumber) async {
     try {
-      // Example: Integrate with train API (Deutsche Bahn, Amtrak, etc.)
-      // For demo purposes, returning mock data
       await Future.delayed(const Duration(seconds: 1));
-
-      // In production, replace with actual train API call
-      // Example for Deutsche Bahn API or similar
       return [
         Transport(
           id: trainNumber,
@@ -88,13 +78,10 @@ class TransportService {
     }
   }
 
-  // Get route directions to airport/station
   String getRouteUrl(String location, double? lat, double? lon) {
     if (lat != null && lon != null) {
-      // Google Maps URL with coordinates
       return 'https://www.google.com/maps/dir/?api=1&destination=$lat,$lon';
     } else {
-      // Google Maps URL with location name
       return 'https://www.google.com/maps/dir/?api=1&destination=${Uri.encodeComponent(location)}';
     }
   }

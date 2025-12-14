@@ -6,10 +6,8 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
-  // Get current user
   User? get currentUser => _auth.currentUser;
 
-  // Auth state changes stream
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
   Future<UserCredential?> signUpWithEmail({
@@ -19,16 +17,13 @@ class AuthService {
     required String name,
     required String phone,
     required String country,
-    required String gender, // Added gender parameter
+    required String gender,
   }) async {
     try {
-      // Create Firebase Auth user
       UserCredential userCredential = await _auth
           .createUserWithEmailAndPassword(email: email, password: password);
 
       final uid = userCredential.user!.uid;
-
-      // Build AppUser data to save in Firestore
       final userData = {
         "id": uid,
         "username": username,
@@ -36,7 +31,7 @@ class AuthService {
         "email": email,
         "phone": phone,
         "country": country,
-        "gender": gender, // Added gender field
+        "gender": gender,
         "userAvatar": gender == 'Female'
             ? 'https://nydkmuqxbdmosymchola.supabase.co/storage/v1/object/public/post-images/avatars/avatar_default_women.png'
             : 'https://nydkmuqxbdmosymchola.supabase.co/storage/v1/object/public/post-images/avatars/avatar_default_man.png',
@@ -49,7 +44,6 @@ class AuthService {
         "updatedAt": FieldValue.serverTimestamp(),
       };
 
-      //Save to Firestore
       await FirebaseFirestore.instance
           .collection("users")
           .doc(uid)
@@ -61,7 +55,6 @@ class AuthService {
     }
   }
 
-  // Sign in with email and password
   Future<UserCredential?> signInWithEmail({
     required String email,
     required String password,
@@ -78,24 +71,24 @@ class AuthService {
   }
 
   // Sign in with Google
-  Future<UserCredential?> signInWithGoogle() async {
-    try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return null;
+  // Future<UserCredential?> signInWithGoogle() async {
+  //   try {
+  //     final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+  //     if (googleUser == null) return null;
 
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
+  //     final GoogleSignInAuthentication googleAuth =
+  //         await googleUser.authentication;
 
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
+  //     final credential = GoogleAuthProvider.credential(
+  //       accessToken: googleAuth.accessToken,
+  //       idToken: googleAuth.idToken,
+  //     );
 
-      return await _auth.signInWithCredential(credential);
-    } catch (e) {
-      throw 'Google sign-in failed: $e';
-    }
-  }
+  //     return await _auth.signInWithCredential(credential);
+  //   } catch (e) {
+  //     throw 'Google sign-in failed: $e';
+  //   }
+  // }
 
   // Sign out
   Future<void> signOut() async {
@@ -104,13 +97,13 @@ class AuthService {
   }
 
   // Reset password
-  Future<void> resetPassword(String email) async {
-    try {
-      await _auth.sendPasswordResetEmail(email: email);
-    } on FirebaseAuthException catch (e) {
-      throw _handleAuthException(e);
-    }
-  }
+  // Future<void> resetPassword(String email) async {
+  //   try {
+  //     await _auth.sendPasswordResetEmail(email: email);
+  //   } on FirebaseAuthException catch (e) {
+  //     throw _handleAuthException(e);
+  //   }
+  // }
 
   // Delete account
   Future<void> deleteAccount() async {
@@ -138,7 +131,6 @@ class AuthService {
     }
   }
 
-  // Re-authenticate user (useful before sensitive operations like account deletion)
   Future<void> reauthenticateWithEmail({
     required String email,
     required String password,
@@ -159,27 +151,27 @@ class AuthService {
   }
 
   // Re-authenticate with Google
-  Future<void> reauthenticateWithGoogle() async {
-    try {
-      User? user = _auth.currentUser;
-      if (user == null) throw 'No user is currently signed in';
+  // Future<void> reauthenticateWithGoogle() async {
+  //   try {
+  //     User? user = _auth.currentUser;
+  //     if (user == null) throw 'No user is currently signed in';
 
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) throw 'Google sign-in cancelled';
+  //     final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+  //     if (googleUser == null) throw 'Google sign-in cancelled';
 
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
+  //     final GoogleSignInAuthentication googleAuth =
+  //         await googleUser.authentication;
 
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
+  //     final credential = GoogleAuthProvider.credential(
+  //       accessToken: googleAuth.accessToken,
+  //       idToken: googleAuth.idToken,
+  //     );
 
-      await user.reauthenticateWithCredential(credential);
-    } catch (e) {
-      throw 'Re-authentication failed: $e';
-    }
-  }
+  //     await user.reauthenticateWithCredential(credential);
+  //   } catch (e) {
+  //     throw 'Re-authentication failed: $e';
+  //   }
+  // }
 
   // Handle Firebase Auth exceptions
   String _handleAuthException(FirebaseAuthException e) {

@@ -127,7 +127,6 @@ class _PostCardState extends State<PostCard> {
                 ],
               ),
             ),
-            IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
           ],
         ),
       ),
@@ -167,7 +166,6 @@ class _PostCardState extends State<PostCard> {
     );
   }
 
-  // ⭐ INSTAGRAM-STYLE IMAGE CAROUSEL ⭐
   Widget _buildImageCarousel() {
     final images = widget.post.images;
 
@@ -188,7 +186,6 @@ class _PostCardState extends State<PostCard> {
           ),
         ),
 
-        // ⭐ Page Counter (like Instagram) ⭐
         if (images.length > 1)
           Positioned(
             top: 12,
@@ -225,7 +222,7 @@ class _PostCardState extends State<PostCard> {
               post.isLikedByCurrentUser
                   ? Icons.favorite
                   : Icons.favorite_border,
-              color: post.isLikedByCurrentUser ? Colors.red : Colors.grey[700],
+              color: post.isLikedByCurrentUser ? Colors.teal : Colors.grey[700],
             ),
             onPressed: widget.onLike,
           ),
@@ -252,10 +249,10 @@ class _PostCardState extends State<PostCard> {
 
           Spacer(),
 
-          IconButton(
-            icon: Icon(Icons.share_outlined, color: Colors.grey[700]),
-            onPressed: widget.onShare,
-          ),
+          // IconButton(
+          //   icon: Icon(Icons.share_outlined, color: Colors.grey[700]),
+          //   onPressed: widget.onShare,
+          // ),
         ],
       ),
     );

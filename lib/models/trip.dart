@@ -1,4 +1,3 @@
-// Trip Model with stored status
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -11,7 +10,7 @@ class Trip {
   final DateTime endDate;
   final String? description;
   final DateTime createdAt;
-  final String status; // NOW STORED IN FIRESTORE
+  final String status;
 
   Trip({
     required this.tripId,
@@ -120,4 +119,3 @@ class Trip {
     }
   }
 }
-

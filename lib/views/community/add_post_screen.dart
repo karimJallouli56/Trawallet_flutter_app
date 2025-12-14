@@ -240,32 +240,19 @@ class _AddPostScreenState extends State<AddPostScreen> {
     try {
       for (int i = 0; i < _selectedImages.length; i++) {
         print('Uploading image ${i + 1} of ${_selectedImages.length}');
-
         final file = _selectedImages[i];
-
-        // Check if file exists
         if (!await file.exists()) {
           throw Exception('Image file does not exist');
         }
-
-        // Get file size
         final fileSize = await file.length();
         print('File size: ${(fileSize / 1024 / 1024).toStringAsFixed(2)} MB');
-
-        // Check file size (optional: limit to 5MB)
         if (fileSize > 5 * 1024 * 1024) {
           throw Exception('Image ${i + 1} is too large (max 5MB)');
         }
-
         final fileName = '${DateTime.now().millisecondsSinceEpoch}_$i.jpg';
         final filePath = 'posts/${widget.userId}/$fileName';
-
-        // Read file as bytes
         final bytes = await file.readAsBytes();
-
         print('Uploading to path: $filePath');
-
-        // Upload file with timeout
         await supabase.storage
             .from('post-images')
             .uploadBinary(
@@ -284,8 +271,6 @@ class _AddPostScreenState extends State<AddPostScreen> {
             );
 
         print('Upload successful for image ${i + 1}');
-
-        // Get public URL
         final imageUrl = supabase.storage
             .from('post-images')
             .getPublicUrl(filePath);
@@ -391,7 +376,6 @@ class _AddPostScreenState extends State<AddPostScreen> {
 
     return WillPopScope(
       onWillPop: () async {
-        // Prevent back navigation while uploading
         if (_isUploading) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -507,7 +491,6 @@ class _AddPostScreenState extends State<AddPostScreen> {
                           ),
                         ),
 
-                        // Text Input
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: TextField(
@@ -529,7 +512,6 @@ class _AddPostScreenState extends State<AddPostScreen> {
                           ),
                         ),
 
-                        // Selected Images Grid
                         if (_selectedImages.isNotEmpty)
                           Padding(
                             padding: const EdgeInsets.all(16),
@@ -583,7 +565,6 @@ class _AddPostScreenState extends State<AddPostScreen> {
                     ),
                   ),
                 ),
-                // Bottom Options Bar
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     vertical: 10,
@@ -595,7 +576,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
                       IconButton(
                         icon: Icon(
                           Icons.photo_library,
-                          color: Colors.teal.shade700,
+                          color: Colors.teal,
                           size: 32,
                         ),
                         onPressed: _isUploading ? null : _pickImages,
@@ -629,8 +610,6 @@ class _AddPostScreenState extends State<AddPostScreen> {
                 ),
               ],
             ),
-
-            // Full screen loading overlay
             if (_isUploading)
               Container(
                 color: Colors.black26,

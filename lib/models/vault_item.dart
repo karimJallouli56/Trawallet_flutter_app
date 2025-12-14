@@ -11,19 +11,19 @@ class VaultItem extends HiveObject {
   String encryptedPath;
 
   @HiveField(2)
-  String fileType; // passport, visa, ticket
+  String fileType;
 
   @HiveField(3)
   DateTime createdAt;
 
   @HiveField(4)
-  String userId; // Added userId field
+  String userId;
 
   VaultItem({
     required this.fileName,
     required this.encryptedPath,
     required this.fileType,
     required this.createdAt,
-    required this.userId, // Added userId parameter
+    required this.userId,
   });
 }

@@ -7,17 +7,13 @@ class AppUser {
   final String email;
   final String phone;
   final String country;
-  final String gender; // Added gender field
+  final String gender;
   final int points;
   final DateTime createdAt;
   final DateTime? updatedAt;
-
-  // Profile & Preferences
   final String? userAvatar;
   final String? bio;
   final List<String> interests;
-
-  // Travel Related
   final int visitedCountries;
   final String? travelStory;
 
@@ -28,7 +24,7 @@ class AppUser {
     required this.email,
     required this.phone,
     required this.country,
-    required this.gender, // Added required gender parameter
+    required this.gender,
     this.points = 0,
     DateTime? createdAt,
     this.updatedAt,
@@ -39,7 +35,6 @@ class AppUser {
     this.travelStory,
   }) : createdAt = createdAt ?? DateTime.now();
 
-  // ---------- Convert Firestore → Model ----------
   factory AppUser.fromMap(String id, Map<String, dynamic> data) {
     return AppUser(
       id: id,
@@ -48,7 +43,7 @@ class AppUser {
       email: data['email'] ?? '',
       phone: data['phone'] ?? '',
       country: data['country'] ?? '',
-      gender: data['gender'] ?? '', // Added gender field parsing
+      gender: data['gender'] ?? '',
       points: data['points'] ?? 0,
       createdAt: _parseTimestamp(data['createdAt']),
       updatedAt: _parseTimestamp(data['updatedAt']),
@@ -60,7 +55,6 @@ class AppUser {
     );
   }
 
-  // ---------- Convert Firestore DocumentSnapshot → Model ----------
   factory AppUser.fromSnapshot(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>?;
     if (data == null) {
@@ -69,7 +63,6 @@ class AppUser {
     return AppUser.fromMap(doc.id, data);
   }
 
-  // ---------- Helper method to parse Timestamp safely ----------
   static DateTime? _parseTimestamp(dynamic value) {
     if (value == null) return null;
     if (value is Timestamp) return value.toDate();
@@ -77,7 +70,6 @@ class AppUser {
     return null;
   }
 
-  // ---------- Convert Model → Map (Firestore) ----------
   Map<String, dynamic> toMap() {
     return {
       'username': username,
@@ -85,7 +77,7 @@ class AppUser {
       'email': email,
       'phone': phone,
       'country': country,
-      'gender': gender, // Added gender field to map
+      'gender': gender,
       'points': points,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,
@@ -97,7 +89,6 @@ class AppUser {
     };
   }
 
-  // ---------- CopyWith method for immutability ----------
   AppUser copyWith({
     String? id,
     String? username,
@@ -105,7 +96,7 @@ class AppUser {
     String? email,
     String? phone,
     String? country,
-    String? gender, // Added gender to copyWith
+    String? gender,
     int? points,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -122,7 +113,7 @@ class AppUser {
       email: email ?? this.email,
       phone: phone ?? this.phone,
       country: country ?? this.country,
-      gender: gender ?? this.gender, // Added gender to copyWith
+      gender: gender ?? this.gender,
       points: points ?? this.points,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -134,10 +125,8 @@ class AppUser {
     );
   }
 
-  // ---------- Utility methods ----------
   bool get hasTravelStory => travelStory != null && travelStory!.isNotEmpty;
 
-  // ---------- Equality operators ----------
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
@@ -147,7 +136,6 @@ class AppUser {
   @override
   int get hashCode => id.hashCode;
 
-  // ---------- toString for debugging ----------
   @override
   String toString() {
     return 'AppUser(id: $id, name: $name, email: $email, '

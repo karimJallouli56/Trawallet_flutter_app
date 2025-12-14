@@ -47,6 +47,7 @@ class ActivityCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: Colors.grey[50],
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 1,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -117,17 +118,21 @@ class ActivityCard extends StatelessWidget {
                     final confirm = await showDialog<bool>(
                       context: context,
                       builder: (context) => AlertDialog(
+                        backgroundColor: Colors.white,
                         title: const Text('Delete Activity'),
                         content: const Text('Are you sure?'),
                         actions: [
                           TextButton(
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.grey,
+                            ),
                             onPressed: () => Navigator.pop(context, false),
                             child: const Text('Cancel'),
                           ),
                           TextButton(
                             onPressed: () => Navigator.pop(context, true),
                             style: TextButton.styleFrom(
-                              foregroundColor: Colors.red,
+                              foregroundColor: Colors.teal,
                             ),
                             child: const Text('Delete'),
                           ),
@@ -156,22 +161,13 @@ class ActivityCard extends StatelessWidget {
                 },
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.location_on,
-                      size: 16,
-                      color: Colors.red.shade400,
-                    ),
+                    Icon(Icons.location_on, size: 16, color: Colors.teal),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
                         activity.location!,
                         style: TextStyle(color: Colors.teal, fontSize: 13),
                       ),
-                    ),
-                    Icon(
-                      Icons.open_in_new,
-                      size: 14,
-                      color: Colors.grey.shade600,
                     ),
                   ],
                 ),

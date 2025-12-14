@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:trawallet_final_version/models/appUser.dart';
 import 'package:trawallet_final_version/services/auth_service.dart';
 import 'package:trawallet_final_version/services/user_service.dart';
+import 'package:trawallet_final_version/services/favorites_service.dart';
+import 'package:trawallet_final_version/views/favorites/favorites_screen.dart';
 import 'package:trawallet_final_version/views/home/components/capitalizeWords.dart';
 import 'package:trawallet_final_version/views/home/components/navbar.dart';
+import 'package:trawallet_final_version/data/mock_destinations.dart';
 import 'package:trawallet_final_version/widgets/confirmation_card.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -14,20 +17,25 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final AuthService authService = AuthService();
   final UserService userService = UserService();
-  bool isDarkMode = false;
+  final FavoritesService favoritesService = FavoritesService();
 
+  bool isDarkMode = false;
   AppUser? appUser;
+  int favoritesCount = 0;
+  bool isLoadingFavorites = true;
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
+    _loadFavoritesCount();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _loadUserData();
+    _loadFavoritesCount();
   }
 
   Future<void> _loadUserData() async {
@@ -43,17 +51,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  Future<void> _loadFavoritesCount() async {
+    setState(() => isLoadingFavorites = true);
+    try {
+      await favoritesService.initialize();
+      final count = await favoritesService.getFavoritesCount();
+      if (mounted) {
+        setState(() {
+          favoritesCount = count;
+          isLoadingFavorites = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => isLoadingFavorites = false);
+      }
+    }
+  }
+
   Future<void> _handleLogout() async {
     try {
+      await favoritesService.reset();
       await authService.signOut();
-      // Navigate to root and remove all previous routes
       if (mounted) {
         Navigator.of(
           context,
         ).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
       }
     } catch (e) {
-      // Show error message if logout fails
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -65,10 +90,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  Future<void> _navigateToFavorites() async {
+    final destinations = getMockDestinations();
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FavoritesScreen(
+          allDestinations: destinations,
+          onFavoritesChanged: () {
+            _loadFavoritesCount();
+          },
+        ),
+      ),
+    );
+    _loadFavoritesCount();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final user = authService.currentUser;
-
     return Navbar(
       activeScreenId: 3,
       child: Scaffold(
@@ -80,11 +120,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           scrolledUnderElevation: 0,
           centerTitle: true,
           title: const Text(
-            "Profile",
+            "Account",
             style: TextStyle(
               color: Colors.teal,
               fontWeight: FontWeight.bold,
-              fontSize: 20,
+              fontSize: 24,
             ),
           ),
         ),
@@ -92,8 +132,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Column(
             children: [
               const SizedBox(height: 20),
-
-              // ================= PROFILE HEADER =================
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 20),
                 padding: const EdgeInsets.all(20),
@@ -110,7 +148,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 child: Row(
                   children: [
-                    // Profile Picture
                     Container(
                       padding: const EdgeInsets.all(3),
                       decoration: BoxDecoration(
@@ -130,7 +167,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(width: 16),
 
-                    // Name
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -161,49 +197,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
               const SizedBox(height: 20),
 
-              // ================= STATS SECTION =================
-              // Padding(
-              //   padding: const EdgeInsets.symmetric(horizontal: 20),
-              //   child: Row(
-              //     children: [
-              //       Expanded(
-              //         child: _buildStatCard(
-              //           icon: Icons.emoji_events,
-              //           label: 'XP',
-              //           value: '${appUser?.points ?? 0}',
-              //         ),
-              //       ),
-              //       const SizedBox(width: 12),
-              //       Expanded(
-              //         child: _buildStatCard(
-              //           icon: Icons.public,
-              //           label: 'Countries',
-              //           value: '${appUser?.visitedCountries ?? 0}',
-              //         ),
-              //       ),
-              //     ],
-              //   ),
-              // ),
-              // const SizedBox(height: 25),
-
-              // ================= MENU SECTION =================
               _buildSectionTitle('Account'),
               const SizedBox(height: 10),
 
               _buildMenuCard([
                 _buildMenuItem(
                   Icons.person_outline,
-                  "Profile Details",
+                  "Profile",
                   context,
                   '/profileDetails',
                 ),
                 _buildDivider(),
-                _buildMenuItem(
-                  Icons.favorite_border,
-                  "My Favorites",
-                  context,
-                  '/profileDetails',
-                ),
+                _buildFavoritesMenuItem(),
                 _buildDivider(),
                 _buildMenuItem(
                   Icons.card_travel,
@@ -241,8 +246,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ]),
 
               const SizedBox(height: 20),
-
-              // ================= LOGOUT BUTTON =================
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: SizedBox(
@@ -285,52 +288,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  // ================= WIDGETS =================
-
-  Widget _buildStatCard({
-    required IconData icon,
-    required String label,
-    required String value,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: Colors.teal, size: 32),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey[800],
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -403,12 +360,69 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Widget _buildFavoritesMenuItem() {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            const Icon(Icons.favorite_outline, color: Colors.teal, size: 22),
+            if (favoritesCount > 0)
+              Positioned(
+                right: -6,
+                top: -6,
+                child: Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    color: Colors.teal,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 1.5),
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 16,
+                    minHeight: 16,
+                  ),
+                  child: Center(
+                    child: Text(
+                      favoritesCount > 99 ? '99+' : favoritesCount.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 8,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+      title: const Text(
+        'My Favorites Destinations',
+        style: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w500,
+          color: Colors.black87,
+        ),
+      ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[400]),
+        ],
+      ),
+      onTap: _navigateToFavorites,
+    );
+  }
+
   Widget _buildLanguageItem() {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
       leading: Container(
         padding: const EdgeInsets.all(8),
-
         child: const Icon(Icons.language, color: Colors.teal, size: 22),
       ),
       title: const Text(
@@ -443,7 +457,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-
             child: const Icon(
               Icons.dark_mode_outlined,
               color: Colors.teal,

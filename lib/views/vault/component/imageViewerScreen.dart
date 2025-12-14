@@ -28,16 +28,16 @@ class ImageViewerScreen extends StatelessWidget {
           top: 40,
           right: 10,
           child: Container(
-            padding: EdgeInsets.all(4), // space around the icon
+            padding: EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: Colors.teal.withOpacity(0.15), // soft teal background
+              color: Colors.teal.withOpacity(0.15),
               shape: BoxShape.circle,
             ),
             child: IconButton(
               onPressed: () => Navigator.pop(context),
               icon: Icon(Icons.close, color: Colors.teal, size: 30),
-              padding: EdgeInsets.zero, // remove default IconButton padding
-              constraints: BoxConstraints(), // fix icon centering
+              padding: EdgeInsets.zero,
+              constraints: BoxConstraints(),
             ),
           ),
         ),

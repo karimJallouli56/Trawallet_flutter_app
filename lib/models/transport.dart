@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 class Transport {
@@ -58,7 +56,6 @@ class Transport {
         arrivalCity: json['arrival']?['airport'] ?? '',
       );
     } else {
-      // For train data (you can integrate with train APIs like Deutsche Bahn, Amtrak, etc.)
       return Transport(
         id: json['train_id'] ?? '',
         type: 'train',

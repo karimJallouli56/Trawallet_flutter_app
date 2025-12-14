@@ -7,10 +7,6 @@ import 'package:trawallet_final_version/views/home/components/capitalizeWords.da
 import 'package:trawallet_final_version/views/trip%20planner/activityCard.dart';
 import 'package:trawallet_final_version/views/trip%20planner/add_activities_screen.dart';
 
-// ============================================================================
-// TRIP DETAIL SCREEN (Daily Itinerary)
-// ============================================================================
-
 class TripDetailScreen extends StatefulWidget {
   final Trip trip;
 
@@ -46,7 +42,6 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
       backgroundColor: Colors.white,
       body: CustomScrollView(
         slivers: [
-          // Modern AppBar with gradient
           SliverAppBar(
             expandedHeight: 150,
             pinned: true,
@@ -56,7 +51,6 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // Gradient background
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -177,7 +171,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                             ? LinearGradient(
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
-                                colors: [Colors.teal.shade600, Colors.teal],
+                                colors: [Colors.teal.shade400, Colors.teal],
                               )
                             : null,
                         color: isSelected ? null : Colors.white,
@@ -234,7 +228,6 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
             ),
           ),
 
-          // Activities list
           StreamBuilder<List<Activity>>(
             stream: ActivityService.getTripActivities(widget.trip.tripId),
             builder: (context, snapshot) {

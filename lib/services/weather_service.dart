@@ -5,8 +5,7 @@ import '../models/weather.dart';
 
 class WeatherService {
   final String _baseUrl = "https://api.openweathermap.org/data/2.5";
-  final String _apiKey =
-      "aea7259fde88fee8cf6d086989b01445"; // Replace with your API key
+  final String _apiKey = "aea7259fde88fee8cf6d086989b01445";
 
   Future<Weather?> fetchWeather(String city) async {
     try {

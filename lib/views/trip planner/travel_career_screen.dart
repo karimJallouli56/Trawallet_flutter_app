@@ -16,7 +16,7 @@ class _TravelCareerScreenState extends State<TravelCareerScreen> {
   bool _isLoading = true;
   List<Trip> _completedTrips = [];
   Map<String, List<Activity>> _tripActivities = {};
-  Set<String> _expandedTripIds = {}; // Track which trips are expanded
+  Set<String> _expandedTripIds = {};
 
   @override
   void initState() {
@@ -33,8 +33,6 @@ class _TravelCareerScreenState extends State<TravelCareerScreen> {
       }
 
       final trips = await TripService.getCompletedTrips(userId);
-
-      // Load activities for each trip
       final activities = <String, List<Activity>>{};
       for (var trip in trips) {
         final tripActivities = await ActivityService.getTripActivities(
@@ -146,7 +144,6 @@ class _TravelCareerScreenState extends State<TravelCareerScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Trip Header - Now clickable
           GestureDetector(
             onTap: () => _toggleTripExpansion(trip.tripId),
             child: _buildTripHeader(
@@ -156,7 +153,6 @@ class _TravelCareerScreenState extends State<TravelCareerScreen> {
               isExpanded,
             ),
           ),
-          // Activities Roadmap - Shows only when expanded
           AnimatedCrossFade(
             firstChild: const SizedBox.shrink(),
             secondChild: Padding(
@@ -331,12 +327,10 @@ class _TravelCareerScreenState extends State<TravelCareerScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Timeline
           SizedBox(
             width: 50,
             child: Column(
               children: [
-                // Node
                 Container(
                   width: 40,
                   height: 40,
@@ -356,7 +350,6 @@ class _TravelCareerScreenState extends State<TravelCareerScreen> {
                     size: activity.isCompleted ? 24 : 12,
                   ),
                 ),
-                // Connecting line
                 if (!isLast)
                   Expanded(
                     child: Container(
@@ -369,7 +362,6 @@ class _TravelCareerScreenState extends State<TravelCareerScreen> {
             ),
           ),
           const SizedBox(width: 16),
-          // Activity Card
           Expanded(
             child: GestureDetector(
               onLongPress: () => _showActivityDetails(activity),
@@ -505,7 +497,6 @@ class _TravelCareerScreenState extends State<TravelCareerScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Handle bar
           Container(
             margin: const EdgeInsets.only(top: 12),
             width: 40,
@@ -515,7 +506,6 @@ class _TravelCareerScreenState extends State<TravelCareerScreen> {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          // Header
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -590,7 +580,6 @@ class _TravelCareerScreenState extends State<TravelCareerScreen> {
               ],
             ),
           ),
-          // Details
           Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -628,7 +617,6 @@ class _TravelCareerScreenState extends State<TravelCareerScreen> {
                   ),
                 ],
                 const SizedBox(height: 20),
-                // Close button
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(

@@ -3,6 +3,10 @@ import 'package:trawallet_final_version/models/appUser.dart';
 import 'package:trawallet_final_version/services/auth_service.dart';
 import 'package:trawallet_final_version/services/user_service.dart';
 import 'package:trawallet_final_version/widgets/input_field.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:io';
 
 class ProfileEditScreen extends StatefulWidget {
   @override
@@ -12,6 +16,7 @@ class ProfileEditScreen extends StatefulWidget {
 class _ProfileEditScreenState extends State<ProfileEditScreen> {
   final AuthService authService = AuthService();
   final UserService userService = UserService();
+  final ImagePicker _picker = ImagePicker();
 
   // Controllers
   final TextEditingController nameController = TextEditingController();
@@ -26,6 +31,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   AppUser? appUser;
   bool isLoading = true;
   bool isSaving = false;
+  bool isUploadingImage = false;
   List<String> selectedInterests = [];
 
   // Available interests
@@ -72,10 +78,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     if (fetchedUser != null) {
       setState(() {
         appUser = fetchedUser;
-        nameController.text = fetchedUser.name ?? '';
-        usernameController.text = fetchedUser.username ?? '';
-        phoneController.text = fetchedUser.phone ?? '';
-        countryController.text = fetchedUser.country ?? 'Tunisia';
+        nameController.text = fetchedUser.name;
+        usernameController.text = fetchedUser.username;
+        phoneController.text = fetchedUser.phone;
+        countryController.text = fetchedUser.country;
         bioController.text = fetchedUser.bio ?? '';
         travelStoryController.text = fetchedUser.travelStory ?? '';
         selectedInterests = List.from(fetchedUser.interests);
@@ -84,8 +90,119 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     }
   }
 
+  Future<void> _pickAndUploadImage() async {
+    try {
+      final ImageSource? source = await showDialog<ImageSource>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: const Text(
+              'Choose Image Source',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.teal.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.photo_library, color: Colors.teal),
+                  ),
+                  title: const Text('Gallery'),
+                  onTap: () => Navigator.pop(context, ImageSource.gallery),
+                ),
+                const SizedBox(height: 8),
+                ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.teal.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.camera_alt, color: Colors.teal),
+                  ),
+                  title: const Text('Camera'),
+                  onTap: () => Navigator.pop(context, ImageSource.camera),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+
+      if (source == null) return;
+
+      final XFile? image = await _picker.pickImage(
+        source: source,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+
+      if (image == null) return;
+
+      setState(() => isUploadingImage = true);
+
+      final String userId = authService.currentUser!.uid;
+      final String fileName =
+          'avatar_${userId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final String filePath = 'avatars/$fileName';
+      final supabase = Supabase.instance.client;
+      await supabase.storage
+          .from('post-images')
+          .upload(
+            filePath,
+            File(image.path),
+            fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
+          );
+      final String publicUrl = supabase.storage
+          .from('post-images')
+          .getPublicUrl(filePath);
+
+      await FirebaseFirestore.instance.collection('users').doc(userId).update({
+        'userAvatar': publicUrl,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      setState(() {
+        appUser = appUser?.copyWith(
+          userAvatar: publicUrl,
+          updatedAt: DateTime.now(),
+        );
+        isUploadingImage = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Profile picture updated successfully!'),
+            backgroundColor: Colors.teal,
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() => isUploadingImage = false);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to upload image: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _saveProfile() async {
-    // Validate required fields
     if (nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -113,8 +230,6 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     try {
       final currentUid = authService.currentUser?.uid;
       if (currentUid == null) return;
-
-      // Update user data
       await userService.updateUser(currentUid, {
         'name': nameController.text.trim(),
         'username': usernameController.text.trim(),
@@ -213,7 +328,6 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Profile Picture Section
                   Center(
                     child: Stack(
                       children: [
@@ -232,11 +346,27 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                           ),
                           child: CircleAvatar(
                             radius: 60,
-                            backgroundColor: Colors.grey[200],
-                            backgroundImage: appUser?.userAvatar != null
+                            backgroundColor: Colors.teal.shade100,
+                            backgroundImage:
+                                appUser?.userAvatar != null &&
+                                    appUser!.userAvatar!.isNotEmpty
                                 ? NetworkImage(appUser!.userAvatar!)
-                                : const AssetImage('assets/images/default.png')
-                                      as ImageProvider,
+                                : null,
+                            child:
+                                appUser?.userAvatar == null ||
+                                    appUser!.userAvatar!.isEmpty
+                                ? Text(
+                                    appUser?.name
+                                            .substring(0, 1)
+                                            .toUpperCase() ??
+                                        'T',
+                                    style: const TextStyle(
+                                      fontSize: 40,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : null,
                           ),
                         ),
                         Positioned(
@@ -253,20 +383,31 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                               shape: BoxShape.circle,
                               border: Border.all(color: Colors.white, width: 3),
                             ),
-                            child: IconButton(
-                              icon: Icon(
-                                Icons.camera_alt,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                              onPressed: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Image picker coming soon!'),
+                            child: isUploadingImage
+                                ? const Padding(
+                                    padding: EdgeInsets.all(12.0),
+                                    child: SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              Colors.white,
+                                            ),
+                                      ),
+                                    ),
+                                  )
+                                : IconButton(
+                                    icon: const Icon(
+                                      Icons.camera_alt,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                    onPressed: _pickAndUploadImage,
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
                                   ),
-                                );
-                              },
-                            ),
                           ),
                         ),
                       ],
@@ -274,7 +415,6 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                   ),
                   SizedBox(height: 30),
 
-                  // Personal Information Section
                   _buildSectionTitle(
                     'Personal Information',
                     Icons.person_outline,
@@ -356,7 +496,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     maxLines: 3,
                   ),
                   const SizedBox(height: 30),
-                  // Interests Section
+
                   _buildSectionTitle('Interests', Icons.favorite_outline),
                   const SizedBox(height: 15),
 
@@ -427,7 +567,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     ),
                   ),
                   const SizedBox(height: 30),
-                  // Travel Story Section
+
                   _buildSectionTitle('Travel Story', Icons.book),
                   const SizedBox(height: 15),
 

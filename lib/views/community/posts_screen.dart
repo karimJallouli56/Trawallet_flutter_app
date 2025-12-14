@@ -1,18 +1,15 @@
 import 'dart:ui';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:trawallet_final_version/models/post.dart';
+import 'package:trawallet_final_version/models/appUser.dart';
+import 'package:trawallet_final_version/services/auth_service.dart';
+import 'package:trawallet_final_version/services/user_service.dart';
 import 'package:trawallet_final_version/views/community/add_post_card.dart';
 import 'package:trawallet_final_version/views/community/add_post_screen.dart';
 import 'package:trawallet_final_version/views/community/postCard.dart';
 import 'package:trawallet_final_version/views/community/comment_screen.dart';
 import 'package:trawallet_final_version/views/home/components/navbar.dart';
-
-// ============================================================================
-// FEED SCREEN
-// ============================================================================
 
 class TravelFeedScreen extends StatefulWidget {
   const TravelFeedScreen({super.key});
@@ -22,17 +19,21 @@ class TravelFeedScreen extends StatefulWidget {
 }
 
 class _TravelFeedScreenState extends State<TravelFeedScreen> {
-  String _selectedFilter = 'All';
+  final AuthService _authService = AuthService();
+  final UserService _userService = UserService();
+
+  // String _selectedFilter = 'All';
   final ScrollController _scrollController = ScrollController();
   List<Post> _posts = [];
   bool _isLoading = false;
+  bool _isLoadingUser = true;
   String? _currentUserId;
+  AppUser? _currentUser;
 
   @override
   void initState() {
     super.initState();
-    _loadPosts();
-    _currentUserId = FirebaseAuth.instance.currentUser?.uid; // Initialize
+    _loadCurrentUser();
     _scrollController.addListener(_onScroll);
   }
 
@@ -42,58 +43,81 @@ class _TravelFeedScreenState extends State<TravelFeedScreen> {
     super.dispose();
   }
 
-  void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
-      _loadMorePosts();
+  Future<void> _loadCurrentUser() async {
+    setState(() => _isLoadingUser = true);
+
+    final user = _authService.currentUser;
+    if (user == null) {
+      setState(() => _isLoadingUser = false);
+      return;
+    }
+
+    _currentUserId = user.uid;
+
+    try {
+      final appUser = await _userService.getUserById(user.uid);
+      setState(() {
+        _currentUser = appUser;
+        _isLoadingUser = false;
+      });
+
+      // Load posts after user data is loaded
+      _loadPosts();
+    } catch (e) {
+      print('Error loading user: $e');
+      setState(() => _isLoadingUser = false);
     }
   }
 
-  // Simulate loading posts (replace with Firebase call)
-  // Example with Firebase
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      // Load more posts here if implementing pagination
+    }
+  }
+
   Future<void> _loadPosts() async {
     setState(() => _isLoading = true);
 
-    // Get current user ID
-    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    final currentUserId = _authService.currentUser?.uid;
 
     if (currentUserId == null) {
       setState(() => _isLoading = false);
       return;
     }
 
-    final snapshot = await FirebaseFirestore.instance
-        .collection('posts')
-        .orderBy('createdAt', descending: true)
-        .limit(10)
-        .get();
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('posts')
+          .orderBy('createdAt', descending: true)
+          .limit(10)
+          .get();
 
-    setState(() {
-      // Use fromFirestoreWithUser instead of fromFirestore
-      _posts = snapshot.docs
-          .map((doc) => Post.fromFirestoreWithUser(doc, currentUserId))
-          .toList();
-      _isLoading = false;
-    });
-  }
-
-  Future<void> _loadMorePosts() async {
-    // Pagination logic here
+      setState(() {
+        _posts = snapshot.docs
+            .map((doc) => Post.fromFirestoreWithUser(doc, currentUserId))
+            .toList();
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Error loading posts: $e');
+      setState(() => _isLoading = false);
+    }
   }
 
   Future<void> _refreshFeed() async {
     await _loadPosts();
   }
 
-  void _onFilterChanged(String filter) {
-    setState(() {
-      _selectedFilter = filter;
-    });
-    _loadPosts();
-  }
+  // void _onFilterChanged(String filter) {
+  //   setState(() {
+  //     _selectedFilter = filter;
+  //   });
+  //   _loadPosts();
+  // }
 
   Future<void> _onLikePressed(Post post) async {
-    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    final currentUserId = _authService.currentUser?.uid;
 
     if (currentUserId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -105,7 +129,6 @@ class _TravelFeedScreenState extends State<TravelFeedScreen> {
       return;
     }
 
-    // Create updated likedBy list
     final updatedLikedBy = List<String>.from(post.likedBy);
     final bool willBeLiked = !post.isLikedByCurrentUser;
 
@@ -115,33 +138,29 @@ class _TravelFeedScreenState extends State<TravelFeedScreen> {
       updatedLikedBy.remove(currentUserId);
     }
 
-    // Optimistic UI update (update UI immediately for better UX)
     setState(() {
       final index = _posts.indexWhere((p) => p.postId == post.postId);
       if (index != -1) {
         _posts[index] = post.copyWith(
           isLikedByCurrentUser: willBeLiked,
           likesCount: willBeLiked ? post.likesCount + 1 : post.likesCount - 1,
-          likedBy: updatedLikedBy, // Update the likedBy array
+          likedBy: updatedLikedBy,
         );
       }
     });
 
-    // Update in Firestore backend
     try {
       await Post.toggleLike(post.postId, currentUserId);
     } catch (e) {
       print('Error toggling like: $e');
 
-      // Revert UI update on error
       setState(() {
         final index = _posts.indexWhere((p) => p.postId == post.postId);
         if (index != -1) {
-          _posts[index] = post; // Revert to original post
+          _posts[index] = post;
         }
       });
 
-      // Show error to user
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -155,7 +174,6 @@ class _TravelFeedScreenState extends State<TravelFeedScreen> {
   }
 
   void _onCommentPressed(Post post) {
-    // Navigate to comments screen
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => CommentsScreen(post: post)),
@@ -163,22 +181,57 @@ class _TravelFeedScreenState extends State<TravelFeedScreen> {
   }
 
   void _onSharePressed(Post post) {
-    // Share post logic
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Share functionality coming soon!')),
     );
   }
 
   void _onUserProfilePressed(Post post) {
-    // Navigate to user profile
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Navigate to ${post.username}\'s profile')),
     );
   }
 
+  void _onAddPostTap() {
+    if (_currentUser == null || _currentUserId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please wait while we load your profile'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddPostScreen(
+          userAvatar:
+              _currentUser!.userAvatar ??
+              'https://nydkmuqxbdmosymchola.supabase.co/storage/v1/object/public/post-images/avatars/avatar_default_man.png',
+          username: _currentUser!.username,
+          userId: _currentUserId!,
+        ),
+      ),
+    ).then((result) {
+      if (result != null) {
+        _refreshFeed();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Post created successfully!'),
+            backgroundColor: Colors.teal,
+          ),
+        );
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
+
     return Navbar(
       activeScreenId: 2,
       child: Scaffold(
@@ -193,208 +246,129 @@ class _TravelFeedScreenState extends State<TravelFeedScreen> {
           backgroundColor: Colors.white,
           foregroundColor: Colors.teal,
           scrolledUnderElevation: 0,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.search),
-              onPressed: () {
-                // Search functionality
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.notifications_outlined),
-              onPressed: () {
-                // Notifications
-              },
-            ),
-          ],
         ),
-
-        body: Column(
-          children: [
-            SizedBox(
-              height: 10,
-              width: size.width,
-              child: DecoratedBox(
-                decoration: BoxDecoration(color: Colors.white),
-              ),
-            ),
-            // Filter Tabs
-            _buildFilterTabs(),
-            // In your feed screen
-            AddPostCard(
-              userAvatar:
-                  'https://nydkmuqxbdmosymchola.supabase.co/storage/v1/object/public/post-images/avatars/avatar_default_man.png',
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => AddPostScreen(
-                      userAvatar:
-                          'https://nydkmuqxbdmosymchola.supabase.co/storage/v1/object/public/post-images/avatars/avatar_default_man.png',
-                      username: 'John Doe',
-                      userId: 'ffff',
+        body: _isLoadingUser
+            ? const Center(child: CircularProgressIndicator(color: Colors.teal))
+            : Column(
+                children: [
+                  SizedBox(
+                    height: 10,
+                    width: size.width,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(color: Colors.white),
                     ),
                   ),
-                ).then((result) {
-                  if (result != null) {
-                    // Handle the created post data
-                    print('Content: ${result['content']}');
-                    print('Images: ${result['images']}');
-                    print('Location: ${result['location']}');
-                    print('Category: ${result['category']}');
-                  }
-                });
-              },
-            ),
-
-            // Feed
-            Expanded(
-              child: _isLoading && _posts.isEmpty
-                  ? const Center(
-                      child: CircularProgressIndicator(color: Colors.teal),
-                    )
-                  : RefreshIndicator(
-                      onRefresh: _refreshFeed,
-                      child: ListView.builder(
-                        controller: _scrollController,
-                        padding: const EdgeInsets.only(top: 2),
-                        itemCount: _posts.length,
-                        itemBuilder: (context, index) {
-                          return PostCard(
-                            post: _posts[index],
-                            onLike: () => _onLikePressed(_posts[index]),
-                            onComment: () => _onCommentPressed(_posts[index]),
-                            onShare: () => _onSharePressed(_posts[index]),
-                            onUserTap: () =>
-                                _onUserProfilePressed(_posts[index]),
-                            isLast: index == _posts.length - 1,
-                          );
-                        },
-                      ),
-                    ),
-            ),
-          ],
-        ),
+                  AddPostCard(
+                    userAvatar:
+                        _currentUser?.userAvatar ??
+                        'https://nydkmuqxbdmosymchola.supabase.co/storage/v1/object/public/post-images/avatars/avatar_default_man.png',
+                    onTap: _onAddPostTap,
+                  ),
+                  Expanded(
+                    child: _isLoading && _posts.isEmpty
+                        ? const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.teal,
+                            ),
+                          )
+                        : _posts.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.explore_outlined,
+                                  size: 80,
+                                  color: Colors.grey.shade400,
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'No posts yet',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Be the first to share your travel story!',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey.shade500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : RefreshIndicator(
+                            backgroundColor: Colors.white,
+                            color: Colors.teal,
+                            onRefresh: _refreshFeed,
+                            child: ListView.builder(
+                              controller: _scrollController,
+                              padding: const EdgeInsets.only(top: 2),
+                              itemCount: _posts.length,
+                              itemBuilder: (context, index) {
+                                return PostCard(
+                                  post: _posts[index],
+                                  onLike: () => _onLikePressed(_posts[index]),
+                                  onComment: () =>
+                                      _onCommentPressed(_posts[index]),
+                                  onShare: () => _onSharePressed(_posts[index]),
+                                  onUserTap: () =>
+                                      _onUserProfilePressed(_posts[index]),
+                                  isLast: index == _posts.length - 1,
+                                );
+                              },
+                            ),
+                          ),
+                  ),
+                ],
+              ),
       ),
     );
   }
 
-  Widget _buildFilterTabs() {
-    final filters = ['All', 'Following', 'Photos', 'Tips', 'Reviews'];
+  // Widget _buildFilterTabs() {
+  //   final filters = ['All', 'Following', 'Photos', 'Tips', 'Reviews'];
 
-    return Container(
-      height: 50,
-      color: Colors.white,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        itemCount: filters.length,
-        itemBuilder: (context, index) {
-          final filter = filters[index];
-          final isSelected = _selectedFilter == filter;
+  //   return Container(
+  //     height: 50,
+  //     color: Colors.white,
+  //     child: ListView.builder(
+  //       scrollDirection: Axis.horizontal,
+  //       padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+  //       itemCount: filters.length,
+  //       itemBuilder: (context, index) {
+  //         final filter = filters[index];
+  //         final isSelected = _selectedFilter == filter;
 
-          return Padding(
-            padding: EdgeInsets.only(right: 8),
-            child: ChoiceChip(
-              label: Text(filter),
-              selected: isSelected,
-              onSelected: (selected) {
-                if (selected) _onFilterChanged(filter);
-              },
-              checkmarkColor: Colors.white,
-              backgroundColor: Colors.white,
-              selectedColor: Colors.teal.shade700,
-              labelStyle: TextStyle(
-                color: isSelected ? Colors.white : Colors.black87,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-              ),
-              shape: StadiumBorder(
-                side: BorderSide(
-                  color: isSelected ? Colors.transparent : Colors.grey.shade300,
-                  width: 1,
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  // Dummy data generator
-  List<Post> _getDummyPosts() {
-    return [
-      Post(
-        postId: '1',
-        userId: 'user1',
-        username: 'TravelExplorer',
-        userAvatar: 'https://i.pravatar.cc/150?img=1',
-        content:
-            'Just visited the stunning Eiffel Tower! The sunset view from the top is absolutely breathtaking. Highly recommend visiting during golden hour! 🗼✨',
-        images: [
-          'https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?w=800',
-          'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800',
-        ],
-        location: 'Paris, France',
-        category: 'photo',
-        likesCount: 245,
-        commentsCount: 32,
-        createdAt: DateTime.now().subtract(const Duration(hours: 2)),
-      ),
-      Post(
-        postId: '2',
-        userId: 'user2',
-        username: 'AdventureSeeker',
-        userAvatar: 'https://i.pravatar.cc/150?img=2',
-        content:
-            'Pro tip: Always book your accommodations at least 2 months in advance for popular destinations. Saved 40% on my Tokyo hotel! 💡',
-        images: [],
-        location: 'Tokyo, Japan',
-        category: 'tip',
-        likesCount: 156,
-        commentsCount: 18,
-        createdAt: DateTime.now().subtract(const Duration(hours: 5)),
-      ),
-      Post(
-        postId: '3',
-        userId: 'user3',
-        username: 'Wanderlust_Sarah',
-        userAvatar: 'https://i.pravatar.cc/150?img=3',
-        content:
-            'Santorini exceeded all expectations! The blue domes, white buildings, and crystal clear waters create the perfect paradise. Already planning my return trip! 🇬🇷',
-        images: [
-          'https://images.unsplash.com/photo-1613395877344-13d4a8e0d49e?w=800',
-        ],
-        location: 'Santorini, Greece',
-        category: 'review',
-        likesCount: 412,
-        commentsCount: 56,
-        createdAt: DateTime.now().subtract(const Duration(days: 1)),
-        isLikedByCurrentUser: true,
-      ),
-      Post(
-        postId: '4',
-        userId: 'user4',
-        username: 'GlobalNomad',
-        userAvatar: 'https://i.pravatar.cc/150?img=4',
-        content:
-            'Hiking the Inca Trail was challenging but absolutely worth it! The view of Machu Picchu at sunrise is something everyone should experience at least once in their lifetime. 🏔️',
-        images: [
-          'https://images.unsplash.com/photo-1587595431973-160d0d94add1?w=800',
-          'https://images.unsplash.com/photo-1526392060635-9d6019884377?w=800',
-        ],
-        location: 'Machu Picchu, Peru',
-        category: 'photo',
-        likesCount: 589,
-        commentsCount: 71,
-        createdAt: DateTime.now().subtract(const Duration(days: 2)),
-      ),
-    ];
-  }
+  //         return Padding(
+  //           padding: EdgeInsets.only(right: 8),
+  //           child: ChoiceChip(
+  //             label: Text(filter),
+  //             selected: isSelected,
+  //             onSelected: (selected) {
+  //               if (selected) _onFilterChanged(filter);
+  //             },
+  //             checkmarkColor: Colors.white,
+  //             backgroundColor: Colors.white,
+  //             selectedColor: Colors.teal,
+  //             labelStyle: TextStyle(
+  //               color: isSelected ? Colors.white : Colors.black87,
+  //               fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+  //             ),
+  //             shape: StadiumBorder(
+  //               side: BorderSide(
+  //                 color: isSelected ? Colors.transparent : Colors.grey.shade300,
+  //                 width: 1,
+  //               ),
+  //             ),
+  //           ),
+  //         );
+  //       },
+  //     ),
+  //   );
+  // }
 }
-
-
-// ============================================================================
-// PLACEHOLDER COMMENTS SCREEN
-// ============================================================================
-

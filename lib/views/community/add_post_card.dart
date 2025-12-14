@@ -45,7 +45,7 @@ class AddPostCard extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             IconButton(
-              icon: Icon(Icons.photo_library, color: Colors.teal.shade700),
+              icon: Icon(Icons.photo_library, color: Colors.teal),
               onPressed: onTap,
             ),
           ],

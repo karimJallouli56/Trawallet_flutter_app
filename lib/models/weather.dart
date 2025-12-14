@@ -88,11 +88,11 @@ class Weather {
 
   Color get alertColor {
     if (condition == 'Thunderstorm' || temperature > 35 || temperature < 0) {
-      return const Color(0xFFFFCDD2); // Red shade
+      return const Color(0xFFFFCDD2); 
     } else if (condition == 'Snow' || condition == 'Rain' || windSpeed > 10) {
-      return const Color(0xFFFFE0B2); // Orange shade
+      return const Color(0xFFFFE0B2); 
     }
-    return Color(0xFF80CBC4); // Green shade
+    return Color(0xFF80CBC4); 
   }
 
   List<String> get travelTips {

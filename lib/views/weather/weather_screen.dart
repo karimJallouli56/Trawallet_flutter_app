@@ -3,6 +3,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:trawallet_final_version/models/weather.dart';
 import 'package:trawallet_final_version/services/weather_service.dart';
+import 'package:trawallet_final_version/views/weather/weatherDetail.dart';
 
 class WeatherScreen extends StatefulWidget {
   const WeatherScreen({super.key});
@@ -51,14 +52,11 @@ class _WeatherScreenState extends State<WeatherScreen> {
 
   Future<String?> _getCurrentCity() async {
     try {
-      // Check if location services are enabled
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         _showMessage('Location services are disabled');
         return null;
       }
-
-      // Check location permissions
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
@@ -72,14 +70,11 @@ class _WeatherScreenState extends State<WeatherScreen> {
         _showMessage('Location permissions are permanently denied');
         return null;
       }
-
-      // Get current position
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
         timeLimit: const Duration(seconds: 10),
       );
 
-      // Get place information from coordinates
       List<Placemark> placemarks = await placemarkFromCoordinates(
         position.latitude,
         position.longitude,
@@ -416,18 +411,18 @@ class _WeatherScreenState extends State<WeatherScreen> {
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceAround,
                                         children: [
-                                          _WeatherDetail(
+                                          WeatherDetail(
                                             icon: Icons.thermostat,
                                             label: 'Feels Like',
                                             value:
                                                 '${weather.feelsLike.round()}°C',
                                           ),
-                                          _WeatherDetail(
+                                          WeatherDetail(
                                             icon: Icons.water_drop,
                                             label: 'Humidity',
                                             value: '${weather.humidity}%',
                                           ),
-                                          _WeatherDetail(
+                                          WeatherDetail(
                                             icon: Icons.air,
                                             label: 'Wind',
                                             value: '${weather.windSpeed} m/s',
@@ -520,39 +515,5 @@ class _WeatherScreenState extends State<WeatherScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
-  }
-}
-
-class _WeatherDetail extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-
-  const _WeatherDetail({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Icon(icon, color: Colors.teal.shade100),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: const TextStyle(fontSize: 12, color: Colors.white54),
-        ),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-      ],
-    );
   }
 }
