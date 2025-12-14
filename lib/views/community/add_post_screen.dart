@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:trawallet_final_version/services/user_service.dart';
 import 'dart:io';
 import 'package:trawallet_final_version/widgets/input_field.dart';
 import 'package:trawallet_final_version/models/post.dart';
@@ -347,6 +348,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
       setState(() => _isUploading = false);
 
       if (mounted) {
+        UserService().makePost(widget.userId);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Post created successfully'),

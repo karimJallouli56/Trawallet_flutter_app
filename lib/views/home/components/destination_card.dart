@@ -1,4 +1,3 @@
-// ALTERNATIVE DESIGN 2: Minimalist with hover effect
 import 'package:flutter/material.dart';
 
 class DestinationCard extends StatefulWidget {

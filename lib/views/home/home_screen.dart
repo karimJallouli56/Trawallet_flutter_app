@@ -1,49 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:trawallet_final_version/models/appUser.dart';
+import 'package:trawallet_final_version/models/destination.dart';
 import 'package:trawallet_final_version/services/auth_service.dart';
+import 'package:trawallet_final_version/services/destination_service.dart';
 import 'package:trawallet_final_version/services/favorites_service.dart';
-import 'package:trawallet_final_version/views/favorites/favorites_screen.dart';
+import 'package:trawallet_final_version/views/destinations/all_destinations_screen.dart';
 import 'package:trawallet_final_version/views/home/components/circle_tools.dart';
 import 'package:trawallet_final_version/views/home/components/navbar.dart';
-import 'package:trawallet_final_version/data/mock_destinations.dart';
-
-// Destination Model
-class Destination {
-  final String id;
-  final String name;
-  final String country;
-  final String imageUrl;
-  final double rating;
-  final String description;
-
-  Destination({
-    required this.id,
-    required this.name,
-    required this.country,
-    required this.imageUrl,
-    required this.rating,
-    required this.description,
-  });
-
-  factory Destination.fromJson(Map<String, dynamic> json) {
-    return Destination(
-      id: json['id']?.toString() ?? '',
-      name: json['name'] ?? json['title'] ?? 'Unknown',
-      country: json['country'] ?? json['location'] ?? 'Unknown',
-      imageUrl: json['imageUrl'] ?? json['image'] ?? json['photo'] ?? '',
-      rating: (json['rating'] ?? 4.5).toDouble(),
-      description: json['description'] ?? '',
-    );
-  }
-}
-
-// Destinations Service
-class DestinationsService {
-  Future<List<Destination>> fetchDestinations() async {
-    return getMockDestinations();
-  }
-}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -68,13 +32,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _initializeData() async {
-    // Initialize favorites service first
     await _favoritesService.initialize();
     await _loadUserData();
     await _loadData();
   }
 
-  // Add this method to load user data
   Future<void> _loadUserData() async {
     final AuthService authService = AuthService();
     final user = authService.currentUser;
@@ -100,7 +62,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
     try {
-      // Load both destinations and favorites
       final results = await Future.wait([
         _destinationsService.fetchDestinations(),
         _favoritesService.getFavorites(),
@@ -122,7 +83,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _toggleFavorite(String destinationId) async {
-    // Optimistically update UI
     setState(() {
       if (_favoriteIds.contains(destinationId)) {
         _favoriteIds.remove(destinationId);
@@ -131,11 +91,9 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     });
 
-    // Save to storage
     final success = await _favoritesService.toggleFavorite(destinationId);
 
     if (!success) {
-      // Revert on failure
       setState(() {
         if (_favoriteIds.contains(destinationId)) {
           _favoriteIds.remove(destinationId);
@@ -166,12 +124,10 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ================= SIMPLE PROFESSIONAL HEADER =================
                   Container(
                     padding: const EdgeInsets.all(16),
                     child: Row(
                       children: [
-                        // Avatar - using userAvatar from AppUser model or fallback to initial
                         CircleAvatar(
                           radius: 28,
                           backgroundColor: Colors.teal,
@@ -225,8 +181,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   const SizedBox(height: 30),
-
-                  // ================= EXPLORER LEVEL CARD =================
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
@@ -264,9 +218,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 const SizedBox(height: 4),
                                 Row(
                                   children: [
-                                    const Text(
-                                      "Adventurer",
-                                      style: TextStyle(
+                                    Text(
+                                      appUser?.rankTitle ?? "Unknown",
+                                      style: const TextStyle(
                                         fontSize: 24,
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,
@@ -282,9 +236,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                         color: Colors.white.withOpacity(0.2),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
-                                      child: const Text(
-                                        "Level 5",
-                                        style: TextStyle(
+                                      child: Text(
+                                        "Level ${appUser?.level ?? 0}",
+                                        style: const TextStyle(
                                           fontSize: 12,
                                           color: Colors.white,
                                           fontWeight: FontWeight.bold,
@@ -312,16 +266,16 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 16),
                         Row(
                           children: [
-                            const Text(
-                              "1,250",
-                              style: TextStyle(
+                            Text(
+                              "${appUser?.currentXP ?? 0}",
+                              style: const TextStyle(
                                 fontSize: 18,
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             Text(
-                              " / 2,000 XP",
+                              " / ${appUser?.xpForNextLevel ?? 0} XP",
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.white.withOpacity(0.8),
@@ -333,7 +287,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ClipRRect(
                           borderRadius: BorderRadius.circular(10),
                           child: LinearProgressIndicator(
-                            value: 0.625,
+                            value: appUser?.progressPercentage ?? 0.0,
                             minHeight: 10,
                             backgroundColor: Colors.white.withOpacity(0.2),
                             valueColor: const AlwaysStoppedAnimation<Color>(
@@ -343,7 +297,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          "750 XP to next level!",
+                          "${appUser?.xpNeeded ?? 0} XP to next level!",
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.white.withOpacity(0.8),
@@ -353,8 +307,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   const SizedBox(height: 30),
-
-                  // ================= FEATURE CIRCLES =================
                   const Text(
                     "Quick Tools",
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -362,43 +314,44 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 15),
                   SizedBox(
                     height: 110,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: [
-                        circleTool(
-                          context: context,
-                          icon: Icons.lock_outline,
-                          label: "Vault",
-                          color: Colors.teal,
-                          route: '/vault',
-                        ),
-                        circleTool(
-                          context: context,
-                          icon: Icons.cloud_outlined,
-                          label: "Weather",
-                          color: Colors.teal,
-                          route: '/weather',
-                        ),
-                        circleTool(
-                          context: context,
-                          icon: Icons.warning_amber_outlined,
-                          label: "SOS",
-                          color: Colors.teal,
-                          route: '/sos',
-                        ),
-                        circleTool(
-                          context: context,
-                          icon: Icons.flight_takeoff_outlined,
-                          label: "Flights",
-                          color: Colors.teal,
-                          route: '/transport',
-                        ),
-                      ],
+                    child: Center(
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        shrinkWrap: true,
+                        children: [
+                          circleTool(
+                            context: context,
+                            icon: Icons.lock_outline,
+                            label: "Vault",
+                            color: Colors.teal,
+                            route: '/vault',
+                          ),
+                          circleTool(
+                            context: context,
+                            icon: Icons.cloud_outlined,
+                            label: "Weather",
+                            color: Colors.teal,
+                            route: '/weather',
+                          ),
+                          circleTool(
+                            context: context,
+                            icon: Icons.warning_amber_outlined,
+                            label: "SOS",
+                            color: Colors.teal,
+                            route: '/sos',
+                          ),
+                          circleTool(
+                            context: context,
+                            icon: Icons.flight_takeoff_outlined,
+                            label: "Flights",
+                            color: Colors.teal,
+                            route: '/transport',
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 30),
-
-                  // ================= BEST DESTINATIONS =================
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -416,8 +369,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             MaterialPageRoute(
                               builder: (context) => AllDestinationsScreen(
                                 destinations: _destinations,
-                                initialFavoriteIds:
-                                    _favoriteIds, // Changed from favoriteIds
+                                initialFavoriteIds: _favoriteIds,
                                 onRefresh: _loadData,
                                 onToggleFavorite: _toggleFavorite,
                               ),
@@ -475,32 +427,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildQuickStat({
-    required IconData icon,
-    required String value,
-    required String label,
-  }) {
-    return Row(
-      children: [
-        Icon(icon, size: 16, color: Colors.teal.shade700),
-        const SizedBox(width: 4),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: Colors.grey.shade800,
-          ),
-        ),
-        const SizedBox(width: 2),
-        Text(
-          label,
-          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-        ),
-      ],
-    );
-  }
-
   Widget _buildModernDestinationCard({
     required Destination destination,
     required bool isFavorite,
@@ -523,7 +449,6 @@ class _HomeScreenState extends State<HomeScreen> {
           borderRadius: BorderRadius.circular(24),
           child: Stack(
             children: [
-              // Image
               Image.network(
                 destination.imageUrl,
                 height: 280,
@@ -559,7 +484,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 },
               ),
-              // Gradient Overlay
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -569,7 +493,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              // Content
               Positioned(
                 bottom: 0,
                 left: 0,
@@ -645,7 +568,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              // Favorite Button with Animation
               Positioned(
                 top: 12,
                 right: 12,
@@ -677,242 +599,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-// ================= ALL DESTINATIONS SCREEN (FIXED) =================
-class AllDestinationsScreen extends StatefulWidget {
-  final List<Destination> destinations;
-  final Set<String> initialFavoriteIds;
-  final Future<void> Function() onRefresh;
-  final Future<void> Function(String) onToggleFavorite;
-
-  const AllDestinationsScreen({
-    super.key,
-    required this.destinations,
-    required this.initialFavoriteIds,
-    required this.onRefresh,
-    required this.onToggleFavorite,
-  });
-
-  @override
-  State<AllDestinationsScreen> createState() => _AllDestinationsScreenState();
-}
-
-class _AllDestinationsScreenState extends State<AllDestinationsScreen> {
-  late Set<String> _favoriteIds;
-
-  @override
-  void initState() {
-    super.initState();
-    _favoriteIds = Set.from(widget.initialFavoriteIds);
-  }
-
-  Future<void> _handleToggleFavorite(String destinationId) async {
-    // Optimistically update UI
-    setState(() {
-      if (_favoriteIds.contains(destinationId)) {
-        _favoriteIds.remove(destinationId);
-      } else {
-        _favoriteIds.add(destinationId);
-      }
-    });
-
-    // Call parent's toggle function
-    await widget.onToggleFavorite(destinationId);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text(
-          'All Destinations',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.teal,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-      ),
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: widget.onRefresh,
-          child: widget.destinations.isEmpty
-              ? const Center(child: Text('No destinations available'))
-              : GridView.builder(
-                  padding: const EdgeInsets.all(20),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 0.75,
-                  ),
-                  itemCount: widget.destinations.length,
-                  itemBuilder: (context, index) {
-                    final destination = widget.destinations[index];
-                    final isFavorite = _favoriteIds.contains(destination.id);
-                    return _buildDestinationGridCard(
-                      context: context,
-                      destination: destination,
-                      isFavorite: isFavorite,
-                    );
-                  },
-                ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDestinationGridCard({
-    required BuildContext context,
-    required Destination destination,
-    required bool isFavorite,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Stack(
-          children: [
-            Image.network(
-              destination.imageUrl,
-              width: double.infinity,
-              height: double.infinity,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Colors.teal.shade300, Colors.teal.shade600],
-                    ),
-                  ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.image_outlined,
-                      size: 48,
-                      color: Colors.white,
-                    ),
-                  ),
-                );
-              },
-            ),
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, Colors.black.withOpacity(0.75)],
-                ),
-              ),
-            ),
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.star, color: Colors.amber, size: 12),
-                          const SizedBox(width: 4),
-                          Text(
-                            destination.rating.toStringAsFixed(1),
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1A1A1A),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      destination.name,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.location_on,
-                          color: Colors.white70,
-                          size: 12,
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            destination.country,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.white70,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Positioned(
-              top: 8,
-              right: 8,
-              child: GestureDetector(
-                onTap: () => _handleToggleFavorite(destination.id),
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.9),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: isFavorite ? Colors.teal : Colors.teal.shade600,
-                    size: 18,
-                  ),
-                ),
-              ),
-            ),
-          ],
         ),
       ),
     );

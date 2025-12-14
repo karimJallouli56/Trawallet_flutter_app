@@ -1,8 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:trawallet_final_version/models/activity.dart';
 import 'package:trawallet_final_version/models/trip.dart';
 import 'package:trawallet_final_version/services/trip_service.dart';
+import 'package:trawallet_final_version/services/user_service.dart';
 import 'package:trawallet_final_version/views/home/components/capitalizeWords.dart';
 import 'package:trawallet_final_version/views/trip%20planner/activityCard.dart';
 import 'package:trawallet_final_version/views/trip%20planner/add_activities_screen.dart';
@@ -18,6 +20,7 @@ class TripDetailScreen extends StatefulWidget {
 
 class _TripDetailScreenState extends State<TripDetailScreen> {
   DateTime? _selectedDate;
+  final String? userId = FirebaseAuth.instance.currentUser?.uid;
 
   @override
   void initState() {
@@ -305,6 +308,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                           dayActivities[index].activityId,
                           !dayActivities[index].isCompleted,
                         );
+                        await UserService().completeTask(userId!);
                       },
                       onDelete: () async {
                         await ActivityService.deleteActivity(

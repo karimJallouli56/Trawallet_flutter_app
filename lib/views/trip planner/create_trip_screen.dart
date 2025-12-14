@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:trawallet_final_version/models/trip.dart';
 import 'package:trawallet_final_version/services/trip_service.dart';
+import 'package:trawallet_final_version/services/user_service.dart';
 import 'package:trawallet_final_version/widgets/input_field.dart'; // Import your InputField
 
 class CreateTripScreen extends StatefulWidget {
@@ -117,7 +118,7 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
       );
 
       await TripService.createTrip(trip);
-
+      await UserService().visitCountry(userId);
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:trawallet_final_version/models/destination.dart';
 import 'package:trawallet_final_version/services/favorites_service.dart';
-import 'package:trawallet_final_version/views/home/home_screen.dart';
 
 class FavoritesScreen extends StatefulWidget {
   final List<Destination> allDestinations;

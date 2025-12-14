@@ -39,7 +39,7 @@ class AuthService {
         "interests": [],
         "visitedCountries": 0,
         "travelStory": "",
-        "points": 0,
+        "points": 100,
         "createdAt": FieldValue.serverTimestamp(),
         "updatedAt": FieldValue.serverTimestamp(),
       };

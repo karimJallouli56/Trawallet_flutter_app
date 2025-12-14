@@ -157,7 +157,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                               child: _buildStatCard(
                                 icon: Icons.flare,
                                 label: 'Badge',
-                                value: 'traveler',
+                                value: appUser!.rankTitle,
                                 color: Colors.teal,
                               ),
                             ),

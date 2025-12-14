@@ -1,4 +1,4 @@
-import 'package:trawallet_final_version/views/home/home_screen.dart';
+import 'package:trawallet_final_version/models/destination.dart';
 
 List<Destination> getMockDestinations() {
   return [

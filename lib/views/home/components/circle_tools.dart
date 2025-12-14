@@ -5,7 +5,7 @@ Widget circleTool({
   required IconData icon,
   required String label,
   required Color color,
-  String? route, // optional
+  String? route,
 }) {
   return Padding(
     padding: const EdgeInsets.only(right: 20),
@@ -27,10 +27,7 @@ Widget circleTool({
             child: Icon(icon, color: color, size: 32),
           ),
           const SizedBox(height: 8),
-          Text(
-            label,
-            style: const TextStyle(fontWeight: FontWeight.w500),
-          ),
+          Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
         ],
       ),
     ),

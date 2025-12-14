@@ -142,3 +142,18 @@ class AppUser {
         'points: $points, visitedCountries: $visitedCountries, gender: $gender)';
   }
 }
+
+extension GamificationExtension on AppUser {
+  int get level => (points / 400).floor() + 1;
+  int get currentXP => points % 400;
+  int get xpForNextLevel => 400;
+  double get progressPercentage => currentXP / xpForNextLevel;
+  int get xpNeeded => xpForNextLevel - currentXP;
+  String get rankTitle {
+    if (level >= 20) return "Legend";
+    if (level >= 15) return "Master";
+    if (level >= 10) return "Expert";
+    if (level >= 5) return "Adventurer";
+    return "Beginner";
+  }
+}

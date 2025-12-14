@@ -89,4 +89,37 @@ class UserService {
       throw 'Failed to soft delete user: $e';
     }
   }
+
+  // Add points to user
+  Future<void> addPoints(String userId, int pointsToAdd) async {
+    await _firestore.collection('users').doc(userId).update({
+      'points': FieldValue.increment(pointsToAdd),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  // Award points for specific actions
+  Future<void> completeTask(String userId) async {
+    await addPoints(userId, 50);
+  }
+
+  Future<void> visitCountry(String userId) async {
+    await _firestore.collection('users').doc(userId).update({
+      'points': FieldValue.increment(100),
+      'visitedCountries': FieldValue.increment(1),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> makePost(String userId) async {
+    await addPoints(userId, 25);
+  }
+
+  // Future<void> makeTravel(String userId) async {
+  //   await addPoints(userId, 100);
+  // }
+
+  // Future<void> signInReward(String userId) async {
+  //   await addPoints(userId, 100);
+  // }
 }
